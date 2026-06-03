@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; }
+.selectable { user-select: text; }
+html, body, #app { height: 100%; }
