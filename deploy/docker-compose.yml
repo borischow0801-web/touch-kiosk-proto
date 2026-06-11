@@ -5,16 +5,29 @@ services:
       dockerfile: Dockerfile
     environment:
       - PORT=3000
-      - HOST=0.0.0.0
+      - NODE_ENV=production
+      # CORS_ORIGIN must be set in the host environment before running docker-compose.
+      # Example: export CORS_ORIGIN=http://kiosk.example.com && docker-compose up
+      # See deploy/.env.example for all required variables.
+      - CORS_ORIGIN=${CORS_ORIGIN:?CORS_ORIGIN must be set to the kiosk frontend origin}
     restart: unless-stopped
 
-  frontend:
+  kiosk-app:
     build:
-      context: ../frontend
+      context: ../kiosk-app
       dockerfile: Dockerfile
     volumes:
-      - frontend_dist:/frontend_dist
+      - kiosk_dist:/kiosk_dist
     restart: unless-stopped
+
+  # admin-web 待 admin-web 工程实现后取消注释
+  # admin-web:
+  #   build:
+  #     context: ../admin-web
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - admin_dist:/admin_dist
+  #   restart: unless-stopped
 
   nginx:
     image: nginx:1.27-alpine
@@ -22,11 +35,13 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - frontend_dist:/usr/share/nginx/html:ro
+      - kiosk_dist:/usr/share/nginx/html:ro
+      # - admin_dist:/usr/share/nginx/admin:ro  # 待 admin-web 就绪后启用
     depends_on:
       - backend
-      - frontend
+      - kiosk-app
     restart: unless-stopped
 
 volumes:
-  frontend_dist:
+  kiosk_dist:
+  # admin_dist:
