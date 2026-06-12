@@ -32,12 +32,22 @@
 
 - **主键**：统一 `varchar(36)`，后端代码生成 UUID v4，禁止自增主键
 - **状态字段**：使用 `varchar`，禁止使用数据库 `ENUM` 类型
-- **布尔字段**：使用 `tinyint`，0 / 1 表示
+- **布尔标志字段**：使用 `smallint`，仅允许 0 / 1（MySQL 8 与 HighGo 均兼容）
 - **JSON 配置字段**：使用 `text` 列存储序列化后的 JSON 字符串，禁止使用 MySQL 的 JSON 类型
 - **公共时间字段**：所有业务表必须包含 `created_at`、`updated_at`、`deleted_at`
 - **逻辑删除**：通过 `deleted_at` 软删除，禁止物理删除业务数据
 - **禁止使用 MySQL 专属特性**：存储过程、触发器、FULLTEXT、GROUP_CONCAT、JSON 操作符、SET 类型均不可用
 - **使用标准 SQL**：标准 JOIN、标准聚合，保证迁移至 HighGo 时无需修改
+
+### 本地数据库操作边界
+
+- 开发库固定使用 `touch_kiosk_dev`，账号固定使用 `touch_kiosk_dev_user`
+- 集成测试库固定使用 `touch_kiosk_test`，账号固定使用 `touch_kiosk_test_user`
+- 禁止使用 `oms_db`、`mydb` 或任何其他已有项目数据库
+- 禁止使用其他项目账号或 root 账号运行应用、迁移和测试
+- 数据库与账号的创建、删除、授权和恢复由用户或 Codex 单独执行，Claude Code / Cursor 不得操作
+- 破坏性测试必须同时校验固定测试库名、固定测试用户、显式确认值及 `touch_kiosk_test_guard` 所有权标记
+- 数据库密码仅保存在未纳入版本控制的 `backend/.env`，不得写入源码、文档、日志或交付报告
 
 ---
 
@@ -198,14 +208,17 @@ published  →  withdrawn  →  archived
 | `backend/` ServiceGuideModule（mock 数据） | ✅ 完成（Step 2 前置） |
 | `backend/` StatsModule（mock 数据） | ✅ 完成（Step 2 前置） |
 | `backend/` PublicApiModule（`/api/public/*`） | ✅ 完成 |
-| `backend/` TypeORM + MySQL 实体 | 待实现（Step 2） |
-| `backend/` AuthModule | 待实现（Step 3） |
-| `backend/` SystemModule | 待实现（Step 4） |
-| `backend/` ContentModule | 待实现（Step 5） |
-| `backend/` PublishModule | 待实现（Step 6） |
+| `backend/` TypeORM + MySQL/HighGo 双方言配置 | ✅ 完成（Step 2）|
+| `backend/` 5 张 RBAC 基础表 + 外键迁移 | ✅ 完成（Step 2）|
+| `backend/` AuthModule（JWT + RBAC 鉴权） | ✅ 完成（Step 3 + 安全闭环） |
+| `backend/` AdminApiModule（`/api/admin/auth/*`） | ✅ 完成（Step 3 + 安全闭环） |
+| `backend/` SystemModule（用户管理、角色管理、角色权限分配、安全闭环） | ✅ 完成（Step 4 Phase 1 + 安全闭环 + 迁移安全） |
+| `backend/` ContentModule（分类/内容/版本/关联，管理端 CRUD） | ✅ 完成（Step 5 Phase 1 + 014/015 迁移闭环） |
+| `backend/` PublishModule（content 审核发布、publish_record、7 条发布权限） | ✅ 完成（Step 6） |
+| `backend/` 群众端政务公开 Public Content API（`/api/public/content/*`） | ✅ 完成（Step 7 Phase 1） |
 | `backend/` 其余模块 | 待实现 |
 | `admin-web/` | 骨架已就绪，已安装依赖，页面待建设 |
-| `kiosk-app/` | ✅ 接口迁移至 `/api/public/*`，useIdleHome 内存泄漏已修复 |
+| `kiosk-app/` | ✅ 政务公开列表/详情接入 `/api/public/content/*`（Step 8）；办事指南等已迁移 `/api/public/*` |
 
 ---
 

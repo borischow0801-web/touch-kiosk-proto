@@ -9,6 +9,7 @@ import { StatsService } from '../../stats/stats.service';
 import { ClickEventDto } from '../../stats/dto/click-event.dto';
 import { PageViewDto } from '../../stats/dto/page-view.dto';
 import { ServiceGuideService } from '../../service-guide/service-guide.service';
+import { Public } from '../../auth/decorators/public.decorator';
 
 // Fixed whitelist for home-page module identifiers
 const MODULE_CLICK_CODES = new Set([
@@ -38,6 +39,7 @@ const STATIC_PAGE_PATHS = new Set([
 // Dynamic item detail route — only safe identifier chars allowed
 const ITEM_DETAIL_RE = /^\/items\/([a-zA-Z0-9\-_]{1,60})$/;
 
+@Public()
 @Controller('public/stats')
 export class StatsController {
   constructor(

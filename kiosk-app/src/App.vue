@@ -31,6 +31,7 @@ import { getConfig } from './api/endpoints'
 import type { AppConfig, NavItem } from './api/types'
 import { useIdleHome } from './app/useIdleHome'
 import { useGuideStore } from './stores/guide'
+import { useContentStore } from './stores/content'
 
 const config = ref<AppConfig | null>(null)
 const defaultNav: NavItem[] = [
@@ -45,6 +46,7 @@ let clockTimer: ReturnType<typeof window.setInterval> | undefined
 let cleanupIdle: (() => void) | undefined
 
 const guideStore = useGuideStore()
+const contentStore = useContentStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -54,6 +56,7 @@ watch(
   () => {
     if (route.path === '/home' && String(route.query['reset'] ?? '') === '1') {
       guideStore.$reset()
+      contentStore.reset()
       void router.replace('/home')
     }
   },
@@ -76,7 +79,10 @@ onMounted(async () => {
   }
   cleanupIdle = useIdleHome(
     () => config.value?.idleSeconds ?? 90,
-    () => { guideStore.$reset() },
+    () => {
+      guideStore.$reset()
+      contentStore.reset()
+    },
   )
 })
 

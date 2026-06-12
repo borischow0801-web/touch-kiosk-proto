@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import 'dotenv/config'; // load .env before any module initialization
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';

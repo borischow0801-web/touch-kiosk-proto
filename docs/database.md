@@ -72,6 +72,17 @@ deleted_at
 
 ---
 
+## 1.4 布尔标志字段
+
+跨 MySQL 8 与 HighGo 的 0/1 标志字段（如 `is_top`、`is_recommend`）统一使用：
+
+- 类型：`smallint`
+- 取值：仅允许 `0` 或 `1`
+
+禁止使用 `tinyint`（HighGo/PostgreSQL 驱动不兼容）及数据库 `BOOLEAN` 类型。
+
+---
+
 # 二、系统用户与权限模型
 
 采用 RBAC 模型。
@@ -223,8 +234,8 @@ deleted_at
 - cover_file_id
 - current_version_id
 - status
-- is_top
-- is_recommend
+- is_top（smallint，0/1）
+- is_recommend（smallint，0/1）
 - sort_order
 - publish_at
 - source_type

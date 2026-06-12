@@ -125,22 +125,56 @@
 
 ### 用户管理
 
-- GET /api/admin/system/users
-- POST /api/admin/system/users
-- GET /api/admin/system/users/:id
-- PUT /api/admin/system/users/:id
-- DELETE /api/admin/system/users/:id
-- POST /api/admin/system/users/:id/reset-password
-- POST /api/admin/system/users/:id/disable
-- POST /api/admin/system/users/:id/enable
+- GET /api/admin/system/users（权限：system:user:read）
+- POST /api/admin/system/users（权限：system:user:create）
+- GET /api/admin/system/users/:id（权限：system:user:read）
+- PUT /api/admin/system/users/:id（权限：system:user:update）
+- DELETE /api/admin/system/users/:id（权限：system:user:delete）
+- POST /api/admin/system/users/:id/reset-password（权限：system:user:reset-password）
+- POST /api/admin/system/users/:id/disable（权限：system:user:update）
+- POST /api/admin/system/users/:id/enable（权限：system:user:update）
+- PUT /api/admin/system/users/:id/roles（权限：system:user:assign-roles）
+
+#### PUT /api/admin/system/users/:id/roles
+
+说明：替换目标用户持有的角色列表。
+
+请求字段：
+
+- roleIds（string[]，不可重复，不可超过 36 字符）
+
+约束：
+
+- 禁止修改自己的角色
+- 所有 roleId 必须存在、active、未软删除，且属于一期三个固定角色
+- 使用事务替换 sys_user_role 关联（先删后插）
+- 移除 SUPER_ADMIN 角色时保护最后一个有效超级管理员
+- 空数组合法，表示清除该用户全部角色
 
 ### 角色管理
 
-- GET /api/admin/system/roles
-- POST /api/admin/system/roles
-- PUT /api/admin/system/roles/:id
-- DELETE /api/admin/system/roles/:id
-- PUT /api/admin/system/roles/:id/permissions
+- GET /api/admin/system/roles（权限：system:role:read）
+- POST /api/admin/system/roles（权限：system:role:create）
+- PUT /api/admin/system/roles/:id（权限：system:role:update）
+- DELETE /api/admin/system/roles/:id（权限：system:role:delete）
+- PUT /api/admin/system/roles/:id/permissions（权限：system:role:assign-permissions）
+
+### 权限列表
+
+- GET /api/admin/system/permissions（权限：system:permission:read）
+
+#### GET /api/admin/system/permissions
+
+说明：返回系统全量权限列表，供角色权限分配时使用。
+
+返回字段（不返回内部字段）：
+
+- id
+- permissionCode
+- permissionName
+- moduleCode
+- permissionType
+- sortOrder
 
 ### 系统参数
 

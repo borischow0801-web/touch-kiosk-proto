@@ -53,6 +53,23 @@ export interface ItemBasicInfo {
   summary?: string
 }
 
+export type PublicContentListItem = {
+  id: string
+  contentType: string
+  title: string
+  subtitle: string | null
+  summary: string | null
+  categoryId: string | null
+  coverFileId: string | null
+  publishAt: string | null
+  sourceType: string | null
+  sourceUrl: string | null
+}
+
+export type PublicContentDetail = PublicContentListItem & {
+  body: string | null
+}
+
 export type ItemDetail = {
   basicInfo: ItemBasicInfo
   acceptConditions: string[]

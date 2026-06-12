@@ -6,6 +6,8 @@ import ItemTypeList from '../pages/ItemTypeList.vue'
 import ItemList from '../pages/ItemList.vue'
 import ItemDetail from '../pages/ItemDetail.vue'
 import Help from '../pages/Help.vue'
+import ContentList from '../pages/ContentList.vue'
+import ContentDetail from '../pages/ContentDetail.vue'
 
 export default createRouter({
   history: createWebHistory(),
@@ -17,6 +19,8 @@ export default createRouter({
     { path: '/item-types', component: ItemTypeList },
     { path: '/items', component: ItemList },
     { path: '/items/:itemId', component: ItemDetail },
+    { path: '/content/:type', component: ContentList },
+    { path: '/content/:type/:id', component: ContentDetail },
     { path: '/help', component: Help },
   ],
   scrollBehavior() { return { top: 0 } },

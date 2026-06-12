@@ -1,5 +1,15 @@
 import { apiGet, apiPost } from './client'
-import type { AppConfig, Dept, Theme, ItemType, Item, ItemDetail, PageResult } from './types'
+import type {
+  AppConfig,
+  Dept,
+  Theme,
+  ItemType,
+  Item,
+  ItemDetail,
+  PageResult,
+  PublicContentDetail,
+  PublicContentListItem,
+} from './types'
 
 function buildQuery(params: Record<string, string | number | undefined>): string {
   const p = new URLSearchParams()
@@ -42,3 +52,16 @@ export const postClick = (payload: { type: string; id?: string; ts?: number }) =
 
 export const postPageView = (payload: { path: string; ts?: number }) =>
   apiPost<{ ok: true }>('/api/public/stats/page-view', payload)
+
+export const getPublicContentList = (
+  apiSegment: string,
+  params: { page?: number; pageSize?: number; categoryId?: string } = {},
+) =>
+  apiGet<PageResult<PublicContentListItem>>(
+    `/api/public/content/${encodeURIComponent(apiSegment)}${buildQuery(params)}`,
+  )
+
+export const getPublicContentDetail = (apiSegment: string, id: string) =>
+  apiGet<PublicContentDetail>(
+    `/api/public/content/${encodeURIComponent(apiSegment)}/${encodeURIComponent(id)}`,
+  )
