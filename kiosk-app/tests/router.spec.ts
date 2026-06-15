@@ -21,8 +21,9 @@ describe('content routes', () => {
     },
   )
 
-  it('详情页对不支持详情的类型重定向回列表', () => {
+  it('详情页对不支持详情的类型显示错误页', () => {
     expect(contentDetailSrc).toContain('supportsDetail')
-    expect(contentDetailSrc).toContain('router.replace')
+    expect(contentDetailSrc).toContain('invalidRoute')
+    expect(contentDetailSrc).toContain('ContentRouteFallback')
   })
 })

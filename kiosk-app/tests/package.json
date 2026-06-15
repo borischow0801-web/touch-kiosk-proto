@@ -3,10 +3,18 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "pretest": "node verify-parent-deps.mjs",
     "test": "vitest run --config vitest.config.ts"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.0",
+    "@vue/test-utils": "^2.4.6",
     "happy-dom": "^15.11.7",
     "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "pinia": "file:../node_modules/pinia",
+    "vue": "file:../node_modules/vue",
+    "vue-router": "file:../node_modules/vue-router"
   }
 }

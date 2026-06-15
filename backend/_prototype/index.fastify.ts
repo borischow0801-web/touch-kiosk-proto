@@ -181,6 +181,6 @@ server.post('/api/metrics/click', async (req) => {
   return { ok: true }
 })
 
-const port = Number(process.env.PORT || 3000)
+const port = Number(process.env.PORT || 3100)
 const host = process.env.HOST || '0.0.0.0'
 server.listen({ port, host })

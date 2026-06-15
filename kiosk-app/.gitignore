@@ -1,0 +1,6 @@
+dist/
+.vite/
+node_modules/.vitest-cache/
+**/.vitest-cache/
+tests/.vitest-cache/
+tests/node_modules/

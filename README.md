@@ -14,15 +14,23 @@ cd backend
 npm i
 npm run dev
 ```
-后端默认：http://localhost:3000
+后端默认：http://localhost:3100
 
-### 前端
+### 群众端
 ```bash
-cd frontend
+cd kiosk-app
 npm i
 npm run dev
 ```
-前端默认：http://localhost:5173 （已代理 /api 到 3000）
+群众端默认：http://localhost:5183（已代理 /api 到 3100）
+
+### 管理端
+```bash
+cd admin-web
+npm i
+npm run dev
+```
+管理端默认：http://localhost:5184（已代理 /api 到 3100）
 
 ## 生产部署（Docker Compose）
 ```bash

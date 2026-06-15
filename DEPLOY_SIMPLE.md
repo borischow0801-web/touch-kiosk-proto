@@ -31,30 +31,40 @@ npm install
 npm run dev
 ```
 
-- 后端默认：<http://localhost:3000>
-- 看到类似 `Server listening at http://0.0.0.0:3000` 即表示启动成功
+- 后端默认：<http://localhost:3100>
+- 看到类似 `Server listening at http://0.0.0.0:3100` 即表示启动成功
 
-### 2. 启动前端（新开一个终端）
+### 2. 启动群众端（新开一个终端）
 
 ```bash
-cd frontend
+cd kiosk-app
 npm install
 npm run dev
 ```
 
-- 前端默认：<http://localhost:5173>
+- 群众端默认：<http://localhost:5183>
 - 终端会给出本地访问地址
 
-### 3. 访问页面
+### 3. 启动管理端（可选，再开一个终端）
 
-在浏览器中打开：**http://localhost:5173**
+```bash
+cd admin-web
+npm install
+npm run dev
+```
+
+- 管理端默认：<http://localhost:5184>
+
+### 4. 访问页面
+
+在浏览器中打开：**http://localhost:5183**
 
 - 首页：6 个常用事项大按钮
 - 底部导航：首页 / 返回 / 重来 / 帮助
 - 可按部门、按主题进入事项列表与详情
 - 约 90 秒无操作会自动回到首页
 
-若在同一台机器上用手机或另一台电脑访问，请将 `localhost` 改为本机 IP（如 `http://192.168.x.x:5173`），并确保防火墙放行 5173 端口。
+若在同一台机器上用手机或另一台电脑访问，请将 `localhost` 改为本机 IP（如 `http://192.168.x.x:5183`），并确保防火墙放行 5183 端口。
 
 ---
 
@@ -96,7 +106,7 @@ cd frontend && npm install && npm run build && cd ..
 cd backend && npm install && npm run build && npm start
 ```
 
-访问：**http://localhost:3000** 即可同时看到页面和调用接口。
+访问：**http://localhost:3100** 即可同时看到页面和调用接口。
 
 ---
 
@@ -117,10 +127,10 @@ cd backend && npm install && npm run build && npm start
 ## 五、常见问题
 
 - **前端能打开但接口报错 / 404**  
-  确认后端已启动在 3000 端口，且前端是用 `npm run dev` 启动（这样 Vite 会把 `/api` 代理到 3000）。
+  确认后端已启动在 3100 端口，且前端是用 `npm run dev` 启动（这样 Vite 会把 `/api` 代理到 3100）。
 
 - **想用本机 IP 访问**  
-  前端 dev 默认只监听 localhost，若需局域网访问，可在 `frontend/vite.config.ts` 的 `server` 中增加 `host: true`，然后通过 `http://<本机IP>:5173` 访问。
+  群众端和管理端开发服务器均已启用 `host: true`，可分别通过 `http://<本机IP>:5183` 和 `http://<本机IP>:5184` 访问。
 
 - **构建后单独打开 dist 里的 index.html**  
   会请求 `/api/...`，若未通过同一域名+端口的服务代理到后端，会跨域或 404。要么用「三、可选」方式让后端托管 dist，要么用 Nginx 等做同源+反向代理。

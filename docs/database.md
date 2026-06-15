@@ -416,48 +416,127 @@ deleted_at
 
 # 六、首页配置模型
 
+说明：
+
+- 一期仅维护 **一条逻辑首页配置**，`config_name` 固定为 `default`。
+- 主键 `id` 由后端生成 UUID v4，**不得**使用固定非 UUID 主键。
+- 首页布局与展示内容通过 **版本表 + 模块表** 管理；高频事项 **不** 写入首页版本快照，由 `guide_item_config` 独立维护。
+- 状态字段、JSON 配置字段遵循本文 §1.2、§1.3 约定（`varchar` 状态、`text` 存序列化 JSON）。
+
+---
+
 ## home_config
 
-首页配置表
+首页配置主表（逻辑单例）
 
 字段：
 
-- id
-- config_name
-- title
-- subtitle
-- top_banner_json
-- theme_json
-- status
-- current_version_id
+- id（varchar(36)，UUID 主键）
+- config_name（varchar，一期固定值 `default`）
+- status（varchar：draft / pending / published / rejected / withdrawn / archived）
+- current_version_id（varchar(36)，可空；指向当前生效的 **已发布** 版本）
 - created_by
 - updated_by
 - created_at
 - updated_at
 - deleted_at
 
+约束：
+
+- 一期仅允许存在一条未删除的 `config_name = default` 记录。
+- `current_version_id` 仅在发布成功时更新；撤回时必须清空。
+- 主表 **不** 存储 `title`、`subtitle`、`top_banner_json`、`theme_json`（这些字段归属版本表）。
+
+---
+
+## home_config_version
+
+首页配置版本表（只追加，不物理删除）
+
+字段：
+
+- id（varchar(36)，UUID 主键）
+- home_config_id（varchar(36)）
+- version_no（int，由应用分配递增序号，非自增主键）
+- title
+- subtitle
+- top_banner_json（text，序列化顶部展示区配置）
+- theme_json（text，序列化主题样式配置）
+- status（varchar：draft / pending / published / rejected / withdrawn / archived）
+- change_remark
+- created_by
+- created_at
+
+约束：
+
+- 同一 `home_config_id` 下 `(home_config_id, version_no)` 唯一。
+- 已发布版本内容 **不得** 被原地覆盖；编辑必须针对 `draft` 版本或新建 `draft` 版本。
+- 新版本发布时：更新 `home_config.current_version_id` 指向新版本；**历史 published 版本保留 published 状态**，不自动改为 withdrawn。
+
 ---
 
 ## home_module
 
-首页模块表
+首页模块表（归属于版本，非主表）
 
 字段：
 
-- id
-- home_config_id
+- id（varchar(36)，UUID 主键）
+- home_config_version_id（varchar(36)，归属某一配置版本）
 - module_code
 - module_name
 - module_type
 - icon
 - color
 - layout_type
-- is_visible
+- is_visible（smallint，0/1）
 - sort_order
 - target_type
 - target_value
 - created_at
 - updated_at
+- deleted_at
+
+约束：
+
+- **不得** 使用 `home_config_id` 直接关联主表；模块必须挂靠在某一 `home_config_version` 下。
+- 管理端模块 CRUD 仅作用于 **当前可编辑草稿版本**（通常为最新 `draft`）。
+- 创建新草稿版本时：从源版本（已发布版本或指定历史版本）**复制模块行** 到新版本；草稿模块的增删改 **不得** 影响已发布版本下的模块数据。
+- 逻辑删除通过 `deleted_at`；查询时过滤已删除模块。
+
+---
+
+## 首页配置与发布记录
+
+- 所有首页发布操作写入 `publish_record`。
+- `biz_type` 固定为 `home_config`。
+- `biz_id` 为 `home_config.id`。
+- `version_id` 为 `home_config_version.id`。
+
+### 状态变化约定
+
+| 操作 | home_config | home_config_version | current_version_id |
+|---|---|---|---|
+| 保存草稿 | 保持或 draft | 更新/新建 draft 版本及模块 | 不变 |
+| 提交审核 | 可变为 pending | draft → pending | 不变 |
+| 审核通过 / 直接发布 | → published | 目标版本 → published | 更新为新版本 id |
+| 驳回 | 视情况 rejected 或保持 published | pending → rejected | 不变 |
+| 撤回 | → withdrawn | 当前生效版本 → withdrawn | **清空（null）** |
+| 回滚 | 保持 published（若线上仍有版本）或 withdrawn | 复制历史版本及模块为新 draft | 不变，直至再次发布 |
+
+回滚不产生即时线上变更；回滚产物为 **draft**，须经审核或直接发布后方可生效。
+
+---
+
+## 首页配置与办事指南配置边界
+
+| 职责 | 模块 / 表 |
+|---|---|
+| 首页标题、副标题、顶部横幅、主题样式、模块卡片布局 | `HomeConfigModule` / `home_config_version` + `home_module` |
+| 高频事项、首页推荐事项（`is_hot`、`is_recommend`） | `GuideConfigModule` / `guide_item_config` |
+| 已发布通知公告摘要（首页展示用） | `ContentModule` / `content_item`（published） |
+
+群众端 Public Home API 由后端 **组合读取** 上述来源，详见 `api-spec.md` 第十章。
 
 ---
 
@@ -595,11 +674,19 @@ deleted_at
 
 首页配置
 ↓
-群众端首页
+版本（home_config_version）
+↓
+模块（home_module）
+↓
+发布记录
+
+首页高频事项
+↓
+guide_item_config（is_hot / is_recommend）
 
 宣传展示
 ↓
-首页推荐
+首页推荐（showcase is_home_recommend）
 
 窗口导航
 ↓

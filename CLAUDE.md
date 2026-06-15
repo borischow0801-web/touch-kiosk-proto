@@ -158,8 +158,9 @@ published  →  withdrawn  →  archived
 
 - 编辑内容时，创建新的草稿版本，不覆盖已发布版本
 - 主表的 `current_version_id` 字段指向当前生效的已发布版本
-- `content_version` 表只追加，不删除历史版本
-- 回滚操作将指定版本内容复制为新草稿，不改变历史记录
+- 版本表（如 `content_version`、`home_config_version`）只追加，不删除历史版本
+- `home_module` 归属于 `home_config_version`，创建新草稿时从源版本复制模块行
+- 回滚操作将指定版本内容（及首页模块）复制为新草稿，不改变历史记录
 
 ---
 
@@ -176,7 +177,7 @@ published  →  withdrawn  →  archived
 | `PublishModule` | 审核发布流程、版本回滚 |
 | `GuideConfigModule` | 部门/主题/高频事项展示配置 |
 | `ServiceGuideModule` | 大数据平台接口代理、缓存兜底 |
-| `HomeConfigModule` | 首页模块配置 |
+| `HomeConfigModule` | 首页配置版本与模块（`home_config_version` + `home_module`）、Public Home API 组合输出 |
 | `NavigationModule` | 楼层/区域/窗口 |
 | `ShowcaseModule` | 宣传展示 |
 | `FileModule` | 图片上传、本地存储 |
@@ -205,7 +206,7 @@ published  →  withdrawn  →  archived
 |---|---|
 | `backend/` NestJS 骨架 + CommonModule | ✅ 完成 |
 | `backend/` HomeConfigModule（mock 数据） | ✅ 完成（Step 2 前置） |
-| `backend/` ServiceGuideModule（mock 数据） | ✅ 完成（Step 2 前置） |
+| `backend/` ServiceGuideModule（公共查询 + Provider 抽象 + 缓存基础 + DevelopmentMock） | ✅ 完成（Step 12） |
 | `backend/` StatsModule（mock 数据） | ✅ 完成（Step 2 前置） |
 | `backend/` PublicApiModule（`/api/public/*`） | ✅ 完成 |
 | `backend/` TypeORM + MySQL/HighGo 双方言配置 | ✅ 完成（Step 2）|
@@ -216,9 +217,10 @@ published  →  withdrawn  →  archived
 | `backend/` ContentModule（分类/内容/版本/关联，管理端 CRUD） | ✅ 完成（Step 5 Phase 1 + 014/015 迁移闭环） |
 | `backend/` PublishModule（content 审核发布、publish_record、7 条发布权限） | ✅ 完成（Step 6） |
 | `backend/` 群众端政务公开 Public Content API（`/api/public/content/*`） | ✅ 完成（Step 7 Phase 1） |
-| `backend/` 其余模块 | 待实现 |
-| `admin-web/` | 骨架已就绪，已安装依赖，页面待建设 |
-| `kiosk-app/` | ✅ 政务公开列表/详情接入 `/api/public/content/*`（Step 8）；办事指南等已迁移 `/api/public/*` |
+| `backend/` GuideConfigModule（部门/主题映射 + guide_item_config + 管理端 CRUD + 12 条 guide 权限） | ✅ 完成（Step 10 Phase 1 + Phase 2 + 036 验收收尾） |
+| `backend/` 其余模块（HomeConfig 真实数据、ServiceGuide 真实对接等） | 待实现 |
+| `admin-web/` | ✅ 认证与应用壳层 + 内容管理 + 审核发布 + 办事指南配置管理页面（Step 11） |
+| `kiosk-app/` | ✅ 政务公开 + 安全/导航收口 + 测试生命周期验收（Step 8）；办事指南等已迁移 `/api/public/*` |
 
 ---
 
@@ -233,12 +235,14 @@ npm run type-check   # 仅类型检查
 
 # 群众端
 cd kiosk-app
-npm run dev          # 开发服务器（端口 5173，/api 代理到 3000）
+npm run dev          # 开发服务器（端口 5183，/api 代理到 3100）
 npm run build        # 生产构建
 
 # 管理端
 cd admin-web
 npm install          # 首次初始化
-npm run dev          # 开发服务器（端口 5174，/api 代理到 3000）
+npm run dev          # 开发服务器（端口 5184，/api 代理到 3100）
 npm run build        # 生产构建
+npm run type-check   # vue-tsc 类型检查
+npm test             # Vitest（tests/）
 ```

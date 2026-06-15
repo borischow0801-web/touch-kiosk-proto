@@ -14,6 +14,6 @@ describe('1080×1920 竖屏布局', () => {
   })
 
   it('底部固定导航', () => {
-    expect(appVue).toContain('BottomNav')
+    expect(appVue).toContain('KioskBottomNav')
   })
 })

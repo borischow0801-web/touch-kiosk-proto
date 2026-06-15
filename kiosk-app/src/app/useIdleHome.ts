@@ -1,6 +1,7 @@
-import router from './router'
+import type { Router } from 'vue-router'
 
 export function useIdleHome(
+  router: Router,
   getIdleSeconds: () => number,
   onReset?: () => void,
 ): () => void {

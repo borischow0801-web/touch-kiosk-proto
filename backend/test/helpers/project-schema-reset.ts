@@ -3,6 +3,10 @@ import { assertMysqlTestDatabaseOwnership } from './mysql-test-env';
 
 /** Project-owned tables in FK-safe drop order (children first). */
 export const PROJECT_TABLES_DROP_ORDER = [
+  'guide_api_cache',
+  'guide_item_config',
+  'guide_theme_mapping',
+  'guide_dept_mapping',
   'publish_record',
   'content_relation',
   'content_item',

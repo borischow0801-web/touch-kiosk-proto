@@ -19,19 +19,18 @@
       <router-view />
     </main>
 
-    <BottomNav :items="config?.nav ?? defaultNav" />
+    <KioskBottomNav :items="config?.nav ?? defaultNav" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import BottomNav from './components/BottomNav.vue'
+import KioskBottomNav from './components/KioskBottomNav.vue'
 import { getConfig } from './api/endpoints'
 import type { AppConfig, NavItem } from './api/types'
 import { useIdleHome } from './app/useIdleHome'
-import { useGuideStore } from './stores/guide'
-import { useContentStore } from './stores/content'
+import { resetKioskSession } from './app/useBottomNav'
 
 const config = ref<AppConfig | null>(null)
 const defaultNav: NavItem[] = [
@@ -45,8 +44,6 @@ const nowText = ref('')
 let clockTimer: ReturnType<typeof window.setInterval> | undefined
 let cleanupIdle: (() => void) | undefined
 
-const guideStore = useGuideStore()
-const contentStore = useContentStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -55,8 +52,7 @@ watch(
   () => route.fullPath,
   () => {
     if (route.path === '/home' && String(route.query['reset'] ?? '') === '1') {
-      guideStore.$reset()
-      contentStore.reset()
+      resetKioskSession()
       void router.replace('/home')
     }
   },
@@ -78,11 +74,9 @@ onMounted(async () => {
     config.value = null
   }
   cleanupIdle = useIdleHome(
+    router,
     () => config.value?.idleSeconds ?? 90,
-    () => {
-      guideStore.$reset()
-      contentStore.reset()
-    },
+    resetKioskSession,
   )
 })
 

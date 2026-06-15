@@ -45,7 +45,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  const port = Number(process.env.PORT ?? 3000);
+  const port = Number(process.env.PORT ?? 3100);
   await app.listen(port, '0.0.0.0');
   Logger.log(`Backend running on http://0.0.0.0:${port}`, 'Bootstrap');
 }

@@ -94,17 +94,17 @@ describe('buildDataSourceOptions — common invariants', () => {
 });
 
 describe('buildDataSourceOptions — entity and migration consistency', () => {
-  it('mysql discovers exactly 10 entities', () => {
+  it('mysql discovers exactly 14 entities', () => {
     withEnv({ DB_DIALECT: 'mysql' }, () => {
       const opts = buildDataSourceOptions();
-      expect(opts.entities).toHaveLength(10);
+      expect(opts.entities).toHaveLength(14);
     });
   });
 
-  it('highgo discovers exactly 10 entities', () => {
+  it('highgo discovers exactly 14 entities', () => {
     withEnv({ DB_DIALECT: 'highgo' }, () => {
       const opts = buildDataSourceOptions();
-      expect(opts.entities).toHaveLength(10);
+      expect(opts.entities).toHaveLength(14);
     });
   });
 
@@ -120,12 +120,12 @@ describe('buildDataSourceOptions — entity and migration consistency', () => {
     expect(mysqlEntities).toEqual(hgEntities);
   });
 
-  it('both dialects include exactly 7 migrations', () => {
+  it('both dialects include exactly 14 migrations', () => {
     withEnv({ DB_DIALECT: 'mysql' }, () => {
-      expect(buildDataSourceOptions().migrations).toHaveLength(7);
+      expect(buildDataSourceOptions().migrations).toHaveLength(14);
     });
     withEnv({ DB_DIALECT: 'highgo' }, () => {
-      expect(buildDataSourceOptions().migrations).toHaveLength(7);
+      expect(buildDataSourceOptions().migrations).toHaveLength(14);
     });
   });
 
@@ -146,6 +146,13 @@ describe('buildDataSourceOptions — entity and migration consistency', () => {
       'AlterContentTablesIntegrity1749873600000',
       'CreatePublishRecordTable1749880800000',
       'SeedPublishPermissions1749884400000',
+      'CreateGuideMappingTables1749895200000',
+      'SeedGuidePermissions1749898800000',
+      'SeedGuideRolePermissions1749902400000',
+      'CreateGuideItemConfigTable1749910800000',
+      'SeedGuideItemPermissions1749914400000',
+      'SeedGuideItemRolePermissions1749918000000',
+      'CreateGuideApiCacheTable1749921600000',
     ]);
     expect(hgMigrations!.map((m) => m.name)).toEqual(mysqlMigrations!.map((m) => m.name));
   });
@@ -162,12 +169,12 @@ describe('buildDataSourceOptions — entity and migration consistency', () => {
     expect(mysqlMigrations).toEqual(hgMigrations);
   });
 
-  it('DB_ENTITIES has exactly 10 items', () => {
-    expect(DB_ENTITIES).toHaveLength(10);
+  it('DB_ENTITIES has exactly 14 items', () => {
+    expect(DB_ENTITIES).toHaveLength(14);
   });
 
-  it('DB_MIGRATIONS has exactly 7 items in correct order', () => {
-    expect(DB_MIGRATIONS).toHaveLength(7);
+  it('DB_MIGRATIONS has exactly 14 items in correct order', () => {
+    expect(DB_MIGRATIONS).toHaveLength(14);
     expect(DB_MIGRATIONS.map((m) => m.name)).toEqual([
       'CreateRbacTables1749686400000',
       'SeedRbacData1749772800000',
@@ -176,6 +183,13 @@ describe('buildDataSourceOptions — entity and migration consistency', () => {
       'AlterContentTablesIntegrity1749873600000',
       'CreatePublishRecordTable1749880800000',
       'SeedPublishPermissions1749884400000',
+      'CreateGuideMappingTables1749895200000',
+      'SeedGuidePermissions1749898800000',
+      'SeedGuideRolePermissions1749902400000',
+      'CreateGuideItemConfigTable1749910800000',
+      'SeedGuideItemPermissions1749914400000',
+      'SeedGuideItemRolePermissions1749918000000',
+      'CreateGuideApiCacheTable1749921600000',
     ]);
   });
 });

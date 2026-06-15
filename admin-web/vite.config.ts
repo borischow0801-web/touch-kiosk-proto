@@ -9,11 +9,13 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  cacheDir: resolve(__dirname, '.vite'),
   server: {
     host: true,
-    port: 5174,
+    port: 5184,
+    strictPort: true,
     proxy: {
-      '/api': 'http://localhost:3000',
+      '/api': 'http://localhost:3100',
     },
   },
 })

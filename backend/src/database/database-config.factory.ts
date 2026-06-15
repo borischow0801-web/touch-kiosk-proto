@@ -9,6 +9,10 @@ import { ContentItem } from './entities/content-item.entity';
 import { ContentVersion } from './entities/content-version.entity';
 import { ContentRelation } from './entities/content-relation.entity';
 import { PublishRecord } from './entities/publish-record.entity';
+import { GuideDeptMapping } from './entities/guide-dept-mapping.entity';
+import { GuideThemeMapping } from './entities/guide-theme-mapping.entity';
+import { GuideItemConfig } from './entities/guide-item-config.entity';
+import { GuideApiCache } from './entities/guide-api-cache.entity';
 import { CreateRbacTables1749686400000 } from './migrations/1749686400000-CreateRbacTables';
 import { SeedRbacData1749772800000 } from './migrations/1749772800000-SeedRbacData';
 import { CreateContentTables1749859200000 } from './migrations/1749859200000-CreateContentTables';
@@ -16,6 +20,13 @@ import { SeedContentPermissions1749862800000 } from './migrations/1749862800000-
 import { AlterContentTablesIntegrity1749873600000 } from './migrations/1749873600000-AlterContentTablesIntegrity';
 import { CreatePublishRecordTable1749880800000 } from './migrations/1749880800000-CreatePublishRecordTable';
 import { SeedPublishPermissions1749884400000 } from './migrations/1749884400000-SeedPublishPermissions';
+import { CreateGuideMappingTables1749895200000 } from './migrations/1749895200000-CreateGuideMappingTables';
+import { SeedGuidePermissions1749898800000 } from './migrations/1749898800000-SeedGuidePermissions';
+import { SeedGuideRolePermissions1749902400000 } from './migrations/1749902400000-SeedGuideRolePermissions';
+import { CreateGuideItemConfigTable1749910800000 } from './migrations/1749910800000-CreateGuideItemConfigTable';
+import { SeedGuideItemPermissions1749914400000 } from './migrations/1749914400000-SeedGuideItemPermissions';
+import { SeedGuideItemRolePermissions1749918000000 } from './migrations/1749918000000-SeedGuideItemRolePermissions';
+import { CreateGuideApiCacheTable1749921600000 } from './migrations/1749921600000-CreateGuideApiCacheTable';
 
 export const DB_ENTITIES = [
   SysUser,
@@ -28,6 +39,10 @@ export const DB_ENTITIES = [
   ContentVersion,
   ContentRelation,
   PublishRecord,
+  GuideDeptMapping,
+  GuideThemeMapping,
+  GuideItemConfig,
+  GuideApiCache,
 ];
 export const DB_MIGRATIONS = [
   CreateRbacTables1749686400000,
@@ -37,6 +52,13 @@ export const DB_MIGRATIONS = [
   AlterContentTablesIntegrity1749873600000,
   CreatePublishRecordTable1749880800000,
   SeedPublishPermissions1749884400000,
+  CreateGuideMappingTables1749895200000,
+  SeedGuidePermissions1749898800000,
+  SeedGuideRolePermissions1749902400000,
+  CreateGuideItemConfigTable1749910800000,
+  SeedGuideItemPermissions1749914400000,
+  SeedGuideItemRolePermissions1749918000000,
+  CreateGuideApiCacheTable1749921600000,
 ];
 
 /**

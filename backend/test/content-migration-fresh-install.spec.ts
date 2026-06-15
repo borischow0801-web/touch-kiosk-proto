@@ -12,7 +12,7 @@ import { resetProjectSchema } from './helpers/project-schema-reset';
 const RUN_MYSQL_MIGRATION_FRESH_INSTALL = process.env.RUN_MYSQL_MIGRATION_FRESH_INSTALL === 'true';
 const describeFreshInstall = RUN_MYSQL_MIGRATION_FRESH_INSTALL ? describe : describe.skip;
 
-const EXPECTED_MIGRATION_COUNT = 7;
+const EXPECTED_MIGRATION_COUNT = 14;
 const CONTENT_TABLES = [
   'content_category',
   'content_item',
@@ -34,6 +34,10 @@ const PROJECT_TABLES_FROM_MIGRATIONS = [
   'content_version',
   'content_relation',
   'publish_record',
+  'guide_dept_mapping',
+  'guide_theme_mapping',
+  'guide_item_config',
+  'guide_api_cache',
 ];
 
 if (!RUN_MYSQL_MIGRATION_FRESH_INSTALL) {
@@ -61,12 +65,12 @@ describeFreshInstall('MySQL — fresh project schema full migration install', ()
     await dataSource.destroy();
   });
 
-  it('从空项目 schema 执行全部 7 条迁移并验证结构', async () => {
+  it('从空项目 schema 执行全部 14 条迁移并验证结构', async () => {
     await resetProjectSchema(dataSource);
 
     const tableCount: { cnt: number }[] = await dataSource.query(
       `SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.TABLES
-       WHERE TABLE_SCHEMA = ? AND TABLE_NAME IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       WHERE TABLE_SCHEMA = ? AND TABLE_NAME IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         testDb,
         ...PROJECT_TABLES_FROM_MIGRATIONS,
@@ -95,6 +99,14 @@ describeFreshInstall('MySQL — fresh project schema full migration install', ()
       [testDb],
     );
     expect(Number(publishExists[0].cnt)).toBe(1);
+
+    for (const table of ['guide_dept_mapping', 'guide_theme_mapping']) {
+      const exists: { cnt: number }[] = await dataSource.query(
+        `SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?`,
+        [testDb, table],
+      );
+      expect(Number(exists[0].cnt)).toBe(1);
+    }
 
     const isTopType: { dataType: string }[] = await dataSource.query(
       `SELECT DATA_TYPE AS dataType FROM INFORMATION_SCHEMA.COLUMNS

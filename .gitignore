@@ -21,3 +21,8 @@ staticfiles/
 !.env.example
 .DS_Store
 
+# kiosk-app vitest cache
+kiosk-app/tests/.vitest-cache/
+kiosk-app/**/.vitest-cache/
+kiosk-app/node_modules/.vitest-cache/
+

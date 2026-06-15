@@ -49,21 +49,21 @@ export class StatsController {
 
   @Post('click')
   @HttpCode(200)
-  recordClick(@Body() dto: ClickEventDto): { ok: true } {
-    this.validateClick(dto);
+  async recordClick(@Body() dto: ClickEventDto): Promise<{ ok: true }> {
+    await this.validateClick(dto);
     this.statsService.recordClick(dto);
     return { ok: true };
   }
 
   @Post('page-view')
   @HttpCode(200)
-  recordPageView(@Body() dto: PageViewDto): { ok: true } {
-    this.validatePagePath(dto.path);
+  async recordPageView(@Body() dto: PageViewDto): Promise<{ ok: true }> {
+    await this.validatePagePath(dto.path);
     this.statsService.recordPageView(dto);
     return { ok: true };
   }
 
-  private validateClick(dto: ClickEventDto): void {
+  private async validateClick(dto: ClickEventDto): Promise<void> {
     const { type, id } = dto;
     if (!id) {
       throw new BadRequestException('click 事件必须提供 id');
@@ -71,17 +71,17 @@ export class StatsController {
     switch (type) {
       case 'item_view':
       case 'hot_item_click':
-        if (!this.guideService.existsItemId(id)) {
+        if (!(await this.guideService.existsItemId(id))) {
           throw new BadRequestException('id 对应的事项不存在');
         }
         break;
       case 'dept_click':
-        if (!this.guideService.existsDeptCode(id)) {
+        if (!(await this.guideService.existsDeptCode(id))) {
           throw new BadRequestException('id 对应的部门不存在');
         }
         break;
       case 'theme_click':
-        if (!this.guideService.existsThemeCode(id)) {
+        if (!(await this.guideService.existsThemeCode(id))) {
           throw new BadRequestException('id 对应的主题不存在');
         }
         break;
@@ -105,13 +105,13 @@ export class StatsController {
     }
   }
 
-  private validatePagePath(path: string): void {
+  private async validatePagePath(path: string): Promise<void> {
     if (STATIC_PAGE_PATHS.has(path)) return;
 
     const match = ITEM_DETAIL_RE.exec(path);
     if (match) {
       const itemId = match[1];
-      if (!this.guideService.existsItemId(itemId)) {
+      if (!(await this.guideService.existsItemId(itemId))) {
         throw new BadRequestException('path 中的事项 id 不存在');
       }
       return;

@@ -13,6 +13,19 @@ describe('Stats endpoints — semantic validation', () => {
   let mockRecordClick: jest.Mock;
   let mockRecordPageView: jest.Mock;
 
+  const mockExistsItemId = jest.fn(async (id: string) =>
+    ['i-001', 'i-002', 'i-003', 'i-004', 'i-005', 'i-006'].includes(id),
+  );
+  const mockExistsDeptCode = jest.fn(async (code: string) =>
+    ['d-001', 'd-002', 'd-003', 'd-004', 'D-001', 'D-002', 'D-003', 'D-004'].includes(code),
+  );
+  const mockExistsThemeCode = jest.fn(async (code: string) =>
+    ['t-001', 't-002', 't-003', 't-004', 'T-001', 'T-002', 'T-003', 'T-004'].includes(code),
+  );
+  const mockExistsItemTypeCode = jest.fn((code: string) =>
+    ['apply', 'query', 'cert'].includes(code),
+  );
+
   beforeAll(async () => {
     mockRecordClick = jest.fn();
     mockRecordPageView = jest.fn();
@@ -20,7 +33,15 @@ describe('Stats endpoints — semantic validation', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [StatsController],
       providers: [
-        ServiceGuideService,
+        {
+          provide: ServiceGuideService,
+          useValue: {
+            existsItemId: mockExistsItemId,
+            existsDeptCode: mockExistsDeptCode,
+            existsThemeCode: mockExistsThemeCode,
+            existsItemTypeCode: mockExistsItemTypeCode,
+          },
+        },
         {
           provide: StatsService,
           useValue: {

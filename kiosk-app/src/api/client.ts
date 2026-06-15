@@ -1,3 +1,6 @@
+import { ApiError } from './errors'
+import { formatApiErrorMessage } from '../utils/apiError'
+
 const TIMEOUT_MS = 8000
 
 interface ApiEnvelope<T> {
@@ -26,6 +29,11 @@ function wrapFetchError(e: unknown): never {
   throw new Error('网络连接失败，请检查网络后重试')
 }
 
+function mapBizStatus(code: number | undefined): number | undefined {
+  if (code === 404 || code === 502 || code === 503 || code === 504) return code
+  return undefined
+}
+
 async function parseEnvelope<T>(res: Response): Promise<T> {
   let json: ApiEnvelope<T> | null = null
   try {
@@ -33,12 +41,18 @@ async function parseEnvelope<T>(res: Response): Promise<T> {
   } catch {
     // response body is not JSON
   }
-  // Prefer the business message from the envelope even on HTTP error status
   if (!res.ok) {
-    throw new Error(json?.message ?? `请求失败（${res.status}）`)
+    throw new ApiError(formatApiErrorMessage(json?.message, res.status), {
+      httpStatus: res.status,
+      code: json?.code,
+    })
   }
   if (!json || json.code !== 0) {
-    throw new Error(json?.message ?? '请求失败')
+    const bizStatus = mapBizStatus(json?.code)
+    throw new ApiError(formatApiErrorMessage(json?.message, bizStatus), {
+      httpStatus: res.status,
+      code: json?.code,
+    })
   }
   return json.data
 }
@@ -66,3 +80,5 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   }
   return parseEnvelope<T>(res)
 }
+
+export { ApiError } from './errors'

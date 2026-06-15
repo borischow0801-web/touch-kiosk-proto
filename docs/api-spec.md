@@ -302,31 +302,241 @@ bizType 示例：
 
 ## 十、首页配置接口
 
-### 管理端
+说明：
 
-- GET /api/admin/home/config
-- PUT /api/admin/home/config
-- GET /api/admin/home/modules
-- POST /api/admin/home/modules
-- PUT /api/admin/home/modules/:id
-- DELETE /api/admin/home/modules/:id
-- PUT /api/admin/home/modules/sort
+- 一期仅维护 **一条逻辑首页配置**（`config_name=default`，主键为 UUID）。
+- 首页布局与展示字段存于 `home_config_version`；模块存于 `home_module`（归属版本，非主表）。
+- 高频事项由 `GuideConfigModule` / `guide_item_config` 的 `is_hot`、`is_recommend` 维护，**不**写入首页版本快照。
+- 审核发布走统一接口第八章，`bizType = home_config`。
+- 管理端模块 CRUD 仅操作 **当前可编辑草稿版本**。
+
+### 权限
+
+| 权限码 | 说明 |
+|---|---|
+| home:config:read | 读取首页配置、版本与模块 |
+| home:config:update | 更新草稿版本基础信息 |
+| home:module:read | 读取模块列表 |
+| home:module:create | 新增模块 |
+| home:module:update | 更新模块 |
+| home:module:delete | 删除模块（逻辑删除） |
+| home:module:sort | 模块排序 |
+| publish:submit | 提交首页配置审核（共用） |
+| publish:approve | 审核通过（共用） |
+| publish:reject | 审核驳回（共用） |
+| publish:direct-publish | 直接发布（共用） |
+| publish:withdraw | 撤回（共用） |
+| publish:rollback | 回滚（共用） |
+| publish:record:read | 查看发布记录（共用） |
+
+### 管理端 — 配置与版本
+
+#### GET /api/admin/home/config
+
+权限：`home:config:read`
+
+说明：返回逻辑单例主表信息及 **当前可编辑草稿版本**（若不存在 draft 则返回元数据与 published 指针，不含 unpublished 正文的直接编辑能力）。
+
+响应 `data` 字段：
+
+- id
+- configName（固定 `default`）
+- status
+- currentVersionId（可空）
+- currentVersion（可空对象，仅当存在已发布版本时返回摘要）
+  - id
+  - versionNo
+  - title
+  - subtitle
+  - status
+- draftVersion（可空对象，当前可编辑草稿）
+  - id
+  - versionNo
+  - title
+  - subtitle
+  - topBannerJson（反序列化后的对象或数组）
+  - themeJson（反序列化后的对象）
+  - status
+  - changeRemark
+- updatedAt
+
+不返回：createdBy 内部审计字段以外的后台凭据。
+
+#### PUT /api/admin/home/config
+
+权限：`home:config:update`
+
+说明：更新 **当前草稿版本** 的基础信息与 JSON 配置。若尚无 draft，应先创建草稿版本（见下方「创建草稿」语义，可由本接口隐式触发或独立服务动作）。
+
+请求体：
+
+- title（string，必填）
+- subtitle（string，可选）
+- topBannerJson（object 或 array，序列化存入 text）
+- themeJson（object，序列化存入 text）
+- changeRemark（string，可选）
+
+约束：
+
+- 不得修改 `published` 版本行；不得修改 `current_version_id`。
+- 不得通过本接口写入高频事项。
+
+#### POST /api/admin/home/config/draft（可选显式接口）
+
+权限：`home:config:update`
+
+说明：基于当前已发布版本（或指定 `sourceVersionId`）复制 **版本记录及模块行** 为新 `draft`。若已存在未提交的 draft，返回 409。
+
+请求体（可选）：
+
+- sourceVersionId（string，可空；默认从 `currentVersionId` 复制）
+
+### 管理端 — 模块（归属当前草稿版本）
+
+#### GET /api/admin/home/modules
+
+权限：`home:module:read`
+
+说明：返回 **当前可编辑草稿版本** 下未逻辑删除的模块列表，按 `sortOrder` 升序。
+
+响应 `data.list[]` 字段：
+
+- id
+- moduleCode
+- moduleName
+- moduleType
+- icon
+- color
+- layoutType
+- isVisible（boolean）
+- sortOrder
+- targetType
+- targetValue
+
+#### POST /api/admin/home/modules
+
+权限：`home:module:create`
+
+请求体：
+
+- moduleCode（string，必填，版本内唯一）
+- moduleName（string，必填）
+- moduleType（string，必填）
+- icon（string，可选）
+- color（string，可选）
+- layoutType（string，可选）
+- isVisible（boolean，默认 true）
+- sortOrder（int，可选）
+- targetType（string，必填，如 route / content / external）
+- targetValue（string，必填）
+
+#### PUT /api/admin/home/modules/:id
+
+权限：`home:module:update`
+
+请求体：同 POST，字段均可选（部分更新）。
+
+#### DELETE /api/admin/home/modules/:id
+
+权限：`home:module:delete`
+
+说明：逻辑删除（写 `deleted_at`），仅允许操作当前草稿版本下的模块。
+
+#### PUT /api/admin/home/modules/sort
+
+权限：`home:module:sort`
+
+说明：批量更新当前草稿版本内模块排序。
+
+请求体：
+
+```json
+{
+  "items": [
+    { "id": "模块 UUID", "sortOrder": 1 },
+    { "id": "模块 UUID", "sortOrder": 2 }
+  ]
+}
+```
+
+约束：
+
+- `items` 不得为空；`id` 必须属于当前草稿版本；`sortOrder` 从 1 起连续或允许间断由实现约定，但须唯一。
+- 不得包含已逻辑删除模块。
+
+### 管理端 — 审核发布
+
+首页配置使用第八章统一发布接口：
+
+- POST /api/admin/publish/home_config/:bizId/submit
+- POST /api/admin/publish/home_config/:bizId/approve
+- POST /api/admin/publish/home_config/:bizId/reject
+- POST /api/admin/publish/home_config/:bizId/direct-publish
+- POST /api/admin/publish/home_config/:bizId/withdraw
+- POST /api/admin/publish/home_config/:bizId/rollback
+- GET /api/admin/publish/home_config/:bizId/records
+
+`bizId` 为 `home_config.id`（UUID）。`rollback` 请求体需包含 `versionId`（历史版本 UUID）。
+
+发布状态（varchar）：`draft`、`pending`、`published`、`rejected`、`withdrawn`、`archived`。
+
+发布语义：
+
+- 新版本发布：更新 `current_version_id`；历史 `published` 版本 **保留**，不自动改为 `withdrawn`。
+- 撤回：当前生效版本与主表均为 `withdrawn`，`current_version_id` 清空。
+- 回滚：复制历史版本 **及其模块** 为新 `draft`，须再次发布方生效。
 
 ### 群众端
 
-GET /api/public/home/config
+#### GET /api/public/home/config
 
-说明：
+说明：返回群众端首页所需配置，由后端 **组合** 以下来源：
 
-返回群众端首页所需配置：
+1. 当前 **已发布** 首页版本（`home_config.status=published` 且 `current_version_id` 有效）
+2. 该版本下可见的 `home_module`（`is_visible=1` 且未逻辑删除）
+3. `guide_item_config` 中 `is_visible=1` 且（`is_hot=1` 或 `is_recommend=1`）的高频事项
+4. 已发布 `content_item`（`content_type=notices`，`status=published`）的摘要列表（条数上限由实现约定，如 5 条）
 
-- 标题
-- 副标题
-- 顶部展示区
-- 首页模块
-- 高频事项
-- 通知公告
-- 主题样式
+**不得** 返回：`draft`、`pending`、`rejected`、`withdrawn`、`archived` 版本或模块；不得返回后台审计字段、共享平台参数。
+
+成功响应 `data` 字段：
+
+- title（string）
+- subtitle（string，可空）
+- idleSeconds（int，来自系统参数或默认 90）
+- bannerLines（string[]，由 `topBannerJson` 映射）
+- theme（object，由 `themeJson` 映射，不含内部键名）
+- modules（array）
+  - moduleCode
+  - moduleName
+  - moduleType
+  - icon
+  - color
+  - layoutType
+  - targetType
+  - targetValue
+- homeHotItems（array，来自 `guide_item_config`）
+  - itemId（platform_item_id 映射）
+  - name（display_name 或 item_name）
+- noticeSummaries（array，来自已发布通知公告）
+  - id
+  - title
+  - summary
+  - publishAt
+- nav（array，固定或由系统参数提供）
+  - label
+  - to
+
+#### 无已发布配置
+
+当不存在满足条件的已发布首页配置时：
+
+- HTTP 状态码：200（信封层）
+- 业务 `code`：**503**
+- `message`：服务暂不可用类友好文案
+- `data`：`null`
+
+**禁止** 返回示例政务事项或开发 mock 数据。群众端应使用 **本地离线配置** 兜底展示。
 
 ---
 

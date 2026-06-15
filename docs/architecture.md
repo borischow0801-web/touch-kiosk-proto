@@ -189,7 +189,7 @@ touch-kiosk-system/
 - 主题分类
 - 主题接口参数映射
 - 高频事项
-- 首页推荐
+- 首页推荐（通过 `guide_item_config.is_hot`、`is_recommend` 控制，**不**写入 `home_config_version`）
 - 事项别名
 - 关联政策
 - 关联 FAQ
@@ -209,12 +209,17 @@ touch-kiosk-system/
 
 负责：
 
-- 群众端首页模块配置
-- 顶部展示区配置
+- 首页配置主表与版本管理（逻辑单例 `config_name=default`）
+- 群众端首页模块配置（`home_module` 归属 `home_config_version`）
+- 顶部展示区配置（`top_banner_json`）
 - 首页卡片排序
-- 图标
-- 主题色
-- 推荐内容
+- 图标与布局
+- 主题色（`theme_json`）
+- 与 `PublishModule` 对接的首页审核发布
+
+**不负责**：高频事项数据维护（归属 `GuideConfigModule`）；通知公告正文（归属 `ContentModule`）。
+
+Public Home API 在本模块内 **组合输出**：已发布首页版本 + 该版本模块 + 可见高频事项 + 已发布通知公告摘要。
 
 ### NavigationModule
 
@@ -309,7 +314,7 @@ touch-kiosk-system/
 
 首页模块包括：
 
-- 高频事项
+- 高频事项（运行时读取 `guide_item_config`，非首页版本快照）
 - 按部门查
 - 按主题查
 - 政策公开
@@ -317,6 +322,10 @@ touch-kiosk-system/
 - 常见问题
 - 通知公告
 - 模范先锋岗
+
+其中 **模块卡片布局与可见性** 由已发布 `home_config_version` + `home_module` 决定；**高频事项列表** 由 `GuideConfigModule` 提供；**通知公告摘要** 由已发布 `content_item` 提供。
+
+群众端在无已发布首页配置时，Public API 返回 **503**；本地离线配置负责兜底，**不得** 由服务端返回示例政务事项。
 
 群众端禁止：
 
@@ -388,6 +397,17 @@ touch-kiosk-system/
 - 撤回
 - 回滚
 - 版本记录
+
+### 首页配置发布（home_config）
+
+与内容发布共用 `/api/admin/publish/home_config/:bizId/*` 接口，`biz_id` 为逻辑单例 `home_config.id`。
+
+- 版本数据存于 `home_config_version`；模块存于 `home_module`（FK 为 `home_config_version_id`）。
+- 管理端编辑仅作用于 **当前草稿版本** 及其模块，不影响已发布版本。
+- 发布成功：更新 `current_version_id`；历史 `published` 版本 **保留** 原状态。
+- 撤回：`home_config.status → withdrawn`，当前生效版本 `→ withdrawn`，`current_version_id` 清空。
+- 回滚：复制指定历史版本 **及其模块** 为新 `draft`，须再次审核或直接发布后生效。
+- 高频事项 **不** 纳入版本快照，Public 层运行时组合 `guide_item_config`。
 
 ---
 

@@ -4,7 +4,7 @@ services:
       context: ../backend
       dockerfile: Dockerfile
     environment:
-      - PORT=3000
+      - PORT=3100
       - NODE_ENV=production
       # CORS_ORIGIN must be set in the host environment before running docker-compose.
       # Example: export CORS_ORIGIN=http://kiosk.example.com && docker-compose up
