@@ -4,6 +4,9 @@ import * as path from 'path';
 // Must import reflect-metadata before any entity/typeorm imports
 import 'reflect-metadata';
 import { buildDataSourceOptions, DB_ENTITIES, DB_MIGRATIONS } from '../src/database/database-config.factory';
+import { HomeConfig } from '../src/database/entities/home-config.entity';
+import { HomeConfigVersion } from '../src/database/entities/home-config-version.entity';
+import { HomeModule } from '../src/database/entities/home-module.entity';
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -94,17 +97,17 @@ describe('buildDataSourceOptions — common invariants', () => {
 });
 
 describe('buildDataSourceOptions — entity and migration consistency', () => {
-  it('mysql discovers exactly 14 entities', () => {
+  it('mysql discovers exactly 17 entities', () => {
     withEnv({ DB_DIALECT: 'mysql' }, () => {
       const opts = buildDataSourceOptions();
-      expect(opts.entities).toHaveLength(14);
+      expect(opts.entities).toHaveLength(17);
     });
   });
 
-  it('highgo discovers exactly 14 entities', () => {
+  it('highgo discovers exactly 17 entities', () => {
     withEnv({ DB_DIALECT: 'highgo' }, () => {
       const opts = buildDataSourceOptions();
-      expect(opts.entities).toHaveLength(14);
+      expect(opts.entities).toHaveLength(17);
     });
   });
 
@@ -120,12 +123,12 @@ describe('buildDataSourceOptions — entity and migration consistency', () => {
     expect(mysqlEntities).toEqual(hgEntities);
   });
 
-  it('both dialects include exactly 14 migrations', () => {
+  it('both dialects include exactly 17 migrations', () => {
     withEnv({ DB_DIALECT: 'mysql' }, () => {
-      expect(buildDataSourceOptions().migrations).toHaveLength(14);
+      expect(buildDataSourceOptions().migrations).toHaveLength(17);
     });
     withEnv({ DB_DIALECT: 'highgo' }, () => {
-      expect(buildDataSourceOptions().migrations).toHaveLength(14);
+      expect(buildDataSourceOptions().migrations).toHaveLength(17);
     });
   });
 
@@ -153,6 +156,9 @@ describe('buildDataSourceOptions — entity and migration consistency', () => {
       'SeedGuideItemPermissions1749914400000',
       'SeedGuideItemRolePermissions1749918000000',
       'CreateGuideApiCacheTable1749921600000',
+      'CreateHomeConfigTables1749925200000',
+      'SeedHomeConfigPermissions1749928800000',
+      'SeedHomeConfigRolePermissions1749932400000',
     ]);
     expect(hgMigrations!.map((m) => m.name)).toEqual(mysqlMigrations!.map((m) => m.name));
   });
@@ -169,12 +175,18 @@ describe('buildDataSourceOptions — entity and migration consistency', () => {
     expect(mysqlMigrations).toEqual(hgMigrations);
   });
 
-  it('DB_ENTITIES has exactly 14 items', () => {
-    expect(DB_ENTITIES).toHaveLength(14);
+  it('DB_ENTITIES has exactly 17 items', () => {
+    expect(DB_ENTITIES).toHaveLength(17);
   });
 
-  it('DB_MIGRATIONS has exactly 14 items in correct order', () => {
-    expect(DB_MIGRATIONS).toHaveLength(14);
+  it('DB_ENTITIES includes home config entities', () => {
+    expect(DB_ENTITIES).toContain(HomeConfig);
+    expect(DB_ENTITIES).toContain(HomeConfigVersion);
+    expect(DB_ENTITIES).toContain(HomeModule);
+  });
+
+  it('DB_MIGRATIONS has exactly 17 items in correct order', () => {
+    expect(DB_MIGRATIONS).toHaveLength(17);
     expect(DB_MIGRATIONS.map((m) => m.name)).toEqual([
       'CreateRbacTables1749686400000',
       'SeedRbacData1749772800000',
@@ -190,6 +202,9 @@ describe('buildDataSourceOptions — entity and migration consistency', () => {
       'SeedGuideItemPermissions1749914400000',
       'SeedGuideItemRolePermissions1749918000000',
       'CreateGuideApiCacheTable1749921600000',
+      'CreateHomeConfigTables1749925200000',
+      'SeedHomeConfigPermissions1749928800000',
+      'SeedHomeConfigRolePermissions1749932400000',
     ]);
   });
 });

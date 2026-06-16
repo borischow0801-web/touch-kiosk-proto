@@ -1,15 +1,20 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { HomeConfigPublishService } from '../home-config/home-config-publish.service';
 import { ContentPublishService, PublishActionResult, PublishRecordItem } from './content-publish.service';
-import { SUPPORTED_BIZ_TYPES } from './constants/publish.constants';
+import { SUPPORTED_BIZ_TYPES, SupportedBizType } from './constants/publish.constants';
 
 @Injectable()
 export class PublishService {
-  constructor(private readonly contentPublish: ContentPublishService) {}
+  constructor(
+    private readonly contentPublish: ContentPublishService,
+    private readonly homeConfigPublish: HomeConfigPublishService,
+  ) {}
 
-  private assertBizType(bizType: string): void {
-    if (!SUPPORTED_BIZ_TYPES.has(bizType as 'content')) {
-      throw new BadRequestException(`不支持的 bizType: "${bizType}"，本阶段仅支持 content`);
+  private assertBizType(bizType: string): SupportedBizType {
+    if (!SUPPORTED_BIZ_TYPES.has(bizType as SupportedBizType)) {
+      throw new BadRequestException(`不支持的 bizType: "${bizType}"`);
     }
+    return bizType as SupportedBizType;
   }
 
   async submit(
@@ -19,7 +24,10 @@ export class PublishService {
     versionId?: string,
     comment?: string,
   ): Promise<PublishActionResult> {
-    this.assertBizType(bizType);
+    const type = this.assertBizType(bizType);
+    if (type === 'home_config') {
+      return this.homeConfigPublish.submit(bizId, operatorId, versionId, comment);
+    }
     return this.contentPublish.submit(bizId, operatorId, versionId, comment);
   }
 
@@ -30,7 +38,10 @@ export class PublishService {
     versionId?: string,
     comment?: string,
   ): Promise<PublishActionResult> {
-    this.assertBizType(bizType);
+    const type = this.assertBizType(bizType);
+    if (type === 'home_config') {
+      return this.homeConfigPublish.approve(bizId, operatorId, versionId, comment);
+    }
     return this.contentPublish.approve(bizId, operatorId, versionId, comment);
   }
 
@@ -41,7 +52,10 @@ export class PublishService {
     versionId?: string,
     comment?: string,
   ): Promise<PublishActionResult> {
-    this.assertBizType(bizType);
+    const type = this.assertBizType(bizType);
+    if (type === 'home_config') {
+      return this.homeConfigPublish.reject(bizId, operatorId, versionId, comment);
+    }
     return this.contentPublish.reject(bizId, operatorId, versionId, comment);
   }
 
@@ -52,7 +66,10 @@ export class PublishService {
     versionId?: string,
     comment?: string,
   ): Promise<PublishActionResult> {
-    this.assertBizType(bizType);
+    const type = this.assertBizType(bizType);
+    if (type === 'home_config') {
+      return this.homeConfigPublish.directPublish(bizId, operatorId, versionId, comment);
+    }
     return this.contentPublish.directPublish(bizId, operatorId, versionId, comment);
   }
 
@@ -62,7 +79,10 @@ export class PublishService {
     operatorId: string,
     comment?: string,
   ): Promise<PublishActionResult> {
-    this.assertBizType(bizType);
+    const type = this.assertBizType(bizType);
+    if (type === 'home_config') {
+      return this.homeConfigPublish.withdraw(bizId, operatorId, comment);
+    }
     return this.contentPublish.withdraw(bizId, operatorId, comment);
   }
 
@@ -73,12 +93,18 @@ export class PublishService {
     versionId: string,
     comment?: string,
   ): Promise<PublishActionResult> {
-    this.assertBizType(bizType);
+    const type = this.assertBizType(bizType);
+    if (type === 'home_config') {
+      return this.homeConfigPublish.rollback(bizId, operatorId, versionId, comment);
+    }
     return this.contentPublish.rollback(bizId, operatorId, versionId, comment);
   }
 
   async listRecords(bizType: string, bizId: string): Promise<PublishRecordItem[]> {
-    this.assertBizType(bizType);
+    const type = this.assertBizType(bizType);
+    if (type === 'home_config') {
+      return this.homeConfigPublish.listRecords(bizId);
+    }
     return this.contentPublish.listRecords(bizId);
   }
 }

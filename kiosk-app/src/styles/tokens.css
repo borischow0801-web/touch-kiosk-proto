@@ -1,0 +1,58 @@
+:root {
+  /* 色彩 — 海滨蓝白 */
+  --kiosk-color-sky-deep: #b8dcff;
+  --kiosk-color-sky-start: #eaf4ff;
+  --kiosk-color-sky-end: #ffffff;
+  --kiosk-color-horizon: #5ba4e8;
+  --kiosk-color-ink: #1e3a5f;
+  --kiosk-color-mist: #5c728a;
+  --kiosk-color-surface: #f7fbff;
+  --kiosk-color-glass: rgba(255, 255, 255, 0.72);
+  --kiosk-color-glass-border: rgba(255, 255, 255, 0.55);
+  --kiosk-color-shadow: rgba(30, 80, 140, 0.12);
+  --kiosk-color-gold: #e8c872;
+  --kiosk-color-honor-bg: #f5ebe8;
+  --kiosk-color-honor-accent: #e8928a;
+  --kiosk-color-honor-tint: #f5d6d0;
+  --kiosk-color-offline: #d4a017;
+
+  /* 字号 */
+  --kiosk-font-h0: 3rem;
+  --kiosk-font-h1: 2.5rem;
+  --kiosk-font-h2: 2.25rem;
+  --kiosk-font-h3: 2rem;
+  --kiosk-font-body: 1.75rem;
+  --kiosk-font-caption: 1.625rem;
+  --kiosk-font-nav: 1.75rem;
+
+  /* 间距 */
+  --kiosk-space-xs: 0.5rem;
+  --kiosk-space-sm: 0.75rem;
+  --kiosk-space-md: 1.25rem;
+  --kiosk-space-lg: 1.5rem;
+  --kiosk-space-xl: 2rem;
+
+  /* 圆角与阴影 */
+  --kiosk-radius-sm: 0.75rem;
+  --kiosk-radius-md: 1rem;
+  --kiosk-radius-lg: 1.25rem;
+  --kiosk-radius-xl: 1.5rem;
+  --kiosk-shadow-glass: 0 8px 24px var(--kiosk-color-shadow);
+  --kiosk-shadow-liquid: 0 10px 32px rgba(30, 80, 140, 0.14), 0 2px 8px rgba(30, 80, 140, 0.06);
+  --kiosk-blur-glass: 16px;
+
+  /* 触控 */
+  --kiosk-touch-min: 48px;
+  --kiosk-card-height-xl: 200px;
+  --kiosk-card-height-l: 180px;
+  --kiosk-card-height-m: 148px;
+  --kiosk-card-height-s: 132px;
+  --kiosk-card-height-banner: 104px;
+  --kiosk-nav-height: 96px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --kiosk-motion-enabled: 0;
+  }
+}

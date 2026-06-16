@@ -47,6 +47,98 @@ export function stubFetchNetworkError(message = '网络连接失败，请检查�
   return vi.spyOn(window, 'fetch').mockRejectedValue(new Error(message))
 }
 
+export const MOCK_REMOTE_HOME_CONFIG = {
+  title: '远程配置大厅',
+  subtitle: '来自 Public Home API',
+  idleSeconds: 90,
+  bannerLines: ['远程横幅提示'],
+  theme: { primaryColor: '#0052d9' },
+  modules: [
+    {
+      moduleCode: 'content_policies',
+      moduleName: '政策公开',
+      moduleType: 'card',
+      icon: null,
+      color: null,
+      layoutType: 'l',
+      targetType: 'content',
+      targetValue: 'policies',
+    },
+    {
+      moduleCode: 'guide_dept',
+      moduleName: '按部门查',
+      moduleType: 'card',
+      icon: null,
+      color: null,
+      layoutType: 'l',
+      targetType: 'route',
+      targetValue: '/depts',
+    },
+  ],
+  homeHotItems: [
+    { itemId: 'remote-001', name: '远程高频事项' },
+  ],
+  noticeSummaries: [
+    { id: 'n-1', title: '远程通知', summary: '摘要', publishAt: '2024-06-01' },
+  ],
+  nav: [
+    { label: '首页', to: '/home' },
+    { label: '返回', to: 'BACK' },
+    { label: '重来', to: '/home?reset=1' },
+    { label: '帮助', to: '/help' },
+  ],
+}
+
+export function homeConfigEnvelope(
+  data: unknown,
+  code = 0,
+  message = '成功',
+): ApiEnvelope<unknown> {
+  return { code, message, data }
+}
+
+export function homeConfigResponse(
+  data: unknown,
+  options: { ok?: boolean; status?: number; code?: number; message?: string } = {},
+): Response {
+  const { ok = true, status = ok ? 200 : 503, code = ok ? 0 : 503, message = ok ? '成功' : '服务暂不可用' } = options
+  return {
+    ok,
+    status,
+    json: async () => homeConfigEnvelope(data, code, message),
+  } as Response
+}
+
+export function stubFetchHomeConfig(data: unknown = MOCK_REMOTE_HOME_CONFIG) {
+  return vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = String(input)
+    if (url.includes('/api/public/home/config')) {
+      return homeConfigResponse(data)
+    }
+    if (url.includes('/api/public/stats/')) {
+      return jsonResponse(envelope({ ok: true }))
+    }
+    return jsonResponse(envelope({}))
+  })
+}
+
+export function stubFetchHome503() {
+  return vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = String(input)
+    if (url.includes('/api/public/home/config')) {
+      return homeConfigResponse(null, { ok: false, status: 503, code: 503, message: '服务暂不可用' })
+    }
+    if (url.includes('/api/public/stats/')) {
+      return jsonResponse(envelope({ ok: true }))
+    }
+    return jsonResponse(envelope({}))
+  })
+}
+
+export function countHomeConfigRequests(spy: ReturnType<typeof vi.spyOn>): number {
+  return spy.mock.calls.filter((call) => String(call[0]).includes('/api/public/home/config')).length
+}
+
 export function lastFetchUrl(spy: ReturnType<typeof vi.spyOn>): string {
   const calls = spy.mock.calls
   const last = calls[calls.length - 1]

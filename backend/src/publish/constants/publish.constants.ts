@@ -1,6 +1,6 @@
-export const SUPPORTED_BIZ_TYPES = new Set(['content'] as const);
+export const SUPPORTED_BIZ_TYPES = new Set(['content', 'home_config'] as const);
 
-export type SupportedBizType = 'content';
+export type SupportedBizType = 'content' | 'home_config';
 
 export const PUBLISH_ACTIONS = {
   SUBMIT: 'submit',

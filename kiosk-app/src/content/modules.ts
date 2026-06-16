@@ -13,7 +13,7 @@ export const CONTENT_MODULES: readonly ContentModuleConfig[] = [
     routeKey: 'policies',
     apiSegment: 'policies',
     title: '政策文件',
-    homeLabel: '政策文件',
+    homeLabel: '政策公开',
     supportsDetail: true,
     showOnHome: true,
   },

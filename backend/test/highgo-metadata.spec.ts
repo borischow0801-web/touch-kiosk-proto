@@ -7,6 +7,9 @@ import { GuideDeptMapping } from '../src/database/entities/guide-dept-mapping.en
 import { GuideApiCache } from '../src/database/entities/guide-api-cache.entity';
 import { GuideItemConfig } from '../src/database/entities/guide-item-config.entity';
 import { GuideThemeMapping } from '../src/database/entities/guide-theme-mapping.entity';
+import { HomeConfig } from '../src/database/entities/home-config.entity';
+import { HomeConfigVersion } from '../src/database/entities/home-config-version.entity';
+import { HomeModule } from '../src/database/entities/home-module.entity';
 
 const FORBIDDEN_COLUMN_TYPES = new Set(['tinyint', 'enum', 'json', 'jsonb']);
 
@@ -39,7 +42,7 @@ function buildHighGoEntityMetadatas() {
 }
 
 describe('HighGo entity metadata compatibility', () => {
-  it('builds PostgreSQL/HighGo entity metadata for all 14 entities without connection', () => {
+  it('builds PostgreSQL/HighGo entity metadata for all 17 entities without connection', () => {
     withEnv(
       {
         DB_DIALECT: 'highgo',
@@ -49,7 +52,7 @@ describe('HighGo entity metadata compatibility', () => {
       },
       () => {
         const metadatas = buildHighGoEntityMetadatas();
-        expect(metadatas).toHaveLength(14);
+        expect(metadatas).toHaveLength(17);
       },
     );
   });
@@ -198,6 +201,53 @@ describe('HighGo entity metadata compatibility', () => {
 
         const cacheKeyIndex = cacheMeta!.indices.find((i) => i.name === 'uk_guide_api_cache_cache_key');
         expect(cacheKeyIndex?.isUnique).toBe(true);
+      },
+    );
+  });
+
+  it('home config entities use varchar/text/smallint and correct version-module relations', () => {
+    withEnv(
+      {
+        DB_DIALECT: 'highgo',
+        DB_NAME: 'highgo_metadata_test',
+        DB_USER: 'test',
+        DB_PASS: 'test',
+      },
+      () => {
+        const metadatas = buildHighGoEntityMetadatas();
+        const configMeta = metadatas.find((m) => m.target === HomeConfig);
+        const versionMeta = metadatas.find((m) => m.target === HomeConfigVersion);
+        const moduleMeta = metadatas.find((m) => m.target === HomeModule);
+        expect(configMeta).toBeDefined();
+        expect(versionMeta).toBeDefined();
+        expect(moduleMeta).toBeDefined();
+
+        const currentVersionId = configMeta!.columns.find((c) => c.databaseName === 'current_version_id');
+        const configDeletedAt = configMeta!.columns.find((c) => c.databaseName === 'deleted_at');
+        expect(String(currentVersionId!.type)).toBe('varchar');
+        expect(currentVersionId!.isGenerated).toBe(false);
+        expect(configDeletedAt).toBeDefined();
+
+        const topBannerJson = versionMeta!.columns.find((c) => c.databaseName === 'top_banner_json');
+        const themeJson = versionMeta!.columns.find((c) => c.databaseName === 'theme_json');
+        const versionDeletedAt = versionMeta!.columns.find((c) => c.databaseName === 'deleted_at');
+        expect(String(topBannerJson!.type)).toBe('text');
+        expect(String(themeJson!.type)).toBe('text');
+        expect(versionDeletedAt).toBeUndefined();
+
+        const versionIdCol = moduleMeta!.columns.find((c) => c.databaseName === 'home_config_version_id');
+        const homeConfigIdCol = moduleMeta!.columns.find((c) => c.databaseName === 'home_config_id');
+        const isVisible = moduleMeta!.columns.find((c) => c.databaseName === 'is_visible');
+        const moduleDeletedAt = moduleMeta!.columns.find((c) => c.databaseName === 'deleted_at');
+        expect(versionIdCol).toBeDefined();
+        expect(homeConfigIdCol).toBeUndefined();
+        expect(String(isVisible!.type)).toBe('smallint');
+        expect(moduleDeletedAt).toBeDefined();
+
+        const versionNoIndex = versionMeta!.indices.find(
+          (i) => i.name === 'uk_home_config_version_config_version_no',
+        );
+        expect(versionNoIndex?.isUnique).toBe(true);
       },
     );
   });

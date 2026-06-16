@@ -443,9 +443,23 @@ deleted_at
 
 约束：
 
-- 一期仅允许存在一条未删除的 `config_name = default` 记录。
+- 一期仅允许存在一条未删除的 `config_name = default` 记录；**逻辑单例由应用层事务检查保证**，不使用数据库部分唯一索引，不引入 MySQL 或 HighGo 专属约束。
 - `current_version_id` 仅在发布成功时更新；撤回时必须清空。
 - 主表 **不** 存储 `title`、`subtitle`、`top_banner_json`、`theme_json`（这些字段归属版本表）。
+
+### 主表状态机
+
+| 场景 | home_config.status | current_version_id |
+|---|---|---|
+| 首次创建草稿（`PUT /api/admin/home/config`） | `draft` | 不变（空） |
+| 无已发布版本时保存/更新草稿 | `draft` | 不变（空） |
+| 无已发布版本时提交审核 | `draft` 或 `rejected` → `pending` | 不变 |
+| 存在 `current_version_id` 时隐式创建草稿、保存草稿、提交审核、驳回 | **保持 `published`** | 不变 |
+| 审核通过或直接发布 | → `published` | 更新为新版本 id |
+| 撤回 | → `withdrawn` | **清空** |
+| `withdrawn` 状态下创建草稿、提交审核或驳回 | **保持 `withdrawn`** | 不变，直至新版本发布 |
+| 从 `withdrawn` 审核通过或直接发布 | → `published` | 更新为新版本 id |
+| 回滚 | **不变**（保持当前 status 与指针） | **不变** |
 
 ---
 
@@ -470,8 +484,24 @@ deleted_at
 约束：
 
 - 同一 `home_config_id` 下 `(home_config_id, version_no)` 唯一。
-- 已发布版本内容 **不得** 被原地覆盖；编辑必须针对 `draft` 版本或新建 `draft` 版本。
+- 同一 `home_config_id` 下 **最多同时存在一个 `draft` 和一个 `pending`**。
+- **仅 `draft` 状态** 允许编辑版本正文（`title`、`subtitle`、`top_banner_json`、`theme_json`）及关联 `home_module` 的增删改排。
+- **`pending`、`published`、`rejected`、`withdrawn`、`archived`** 版本正文与模块 **不可修改**；仅允许通过发布流程更新版本 `status`。
+- 历史版本 **不得** 删除或覆盖（只追加）。
 - 新版本发布时：更新 `home_config.current_version_id` 指向新版本；**历史 published 版本保留 published 状态**，不自动改为 withdrawn。
+
+### 草稿创建与编辑（唯一入口）
+
+基础配置编辑 **仅** 通过 `PUT /api/admin/home/config`（见 `api-spec.md` §十），规则如下：
+
+| 条件 | 行为 |
+|---|---|
+| 已存在 `draft` | 更新该 `draft` 正文 |
+| 不存在 `draft` 且存在 `current_version_id` | 事务内复制当前已发布版本 **及其模块** 生成新 `draft`，再应用本次更新 |
+| 首次使用（主表不存在） | 事务内创建 UUID 主表（`status=draft`）与 `version_no=1` 的 `draft`，再应用更新 |
+| 已存在 `pending` 版本 | 返回 **409**，禁止创建或编辑 `draft` |
+
+模块 CRUD 与排序仅作用于当前 `draft`；存在 `pending` 且无 `draft` 时，模块写操作同样返回 **409**。
 
 ---
 
@@ -517,14 +547,19 @@ deleted_at
 
 | 操作 | home_config | home_config_version | current_version_id |
 |---|---|---|---|
-| 保存草稿 | 保持或 draft | 更新/新建 draft 版本及模块 | 不变 |
-| 提交审核 | 可变为 pending | draft → pending | 不变 |
-| 审核通过 / 直接发布 | → published | 目标版本 → published | 更新为新版本 id |
-| 驳回 | 视情况 rejected 或保持 published | pending → rejected | 不变 |
-| 撤回 | → withdrawn | 当前生效版本 → withdrawn | **清空（null）** |
-| 回滚 | 保持 published（若线上仍有版本）或 withdrawn | 复制历史版本及模块为新 draft | 不变，直至再次发布 |
+| 保存草稿（`PUT`） | 见上文主表状态机 | 更新/新建 `draft` 及模块 | 不变 |
+| 提交审核 | 无已发布：`draft`/`rejected`→`pending`；有 `current_version_id`：**保持 `published`** | `draft` → `pending` | 不变 |
+| 审核通过 / 直接发布 | → `published` | 目标版本 → `published` | 更新为新版本 id |
+| 驳回 | 无已发布：→`rejected`；有 `current_version_id`：**保持 `published`** | `pending` → `rejected` | 不变 |
+| 撤回 | → `withdrawn` | 当前生效版本 → `withdrawn` | **清空（null）** |
+| `withdrawn` 下创建/提交/驳回 | **保持 `withdrawn`** | 新建/流转 `draft`/`pending`/`rejected` | 不变，直至再发布 |
+| 回滚 | **不变** | 复制历史版本及模块为新 `draft` | **不变** |
 
 回滚不产生即时线上变更；回滚产物为 **draft**，须经审核或直接发布后方可生效。
+
+### 群众端不可用语义
+
+当不存在满足条件的已发布首页配置（如 `status` 非 `published`、`current_version_id` 为空或无效）时，Public Home API 返回 **HTTP 503**，响应信封 `code=503`、`data=null`；群众端捕获后使用本地离线配置，**不得** 由服务端返回开发 mock 或示例政务事项。
 
 ---
 
@@ -536,7 +571,7 @@ deleted_at
 | 高频事项、首页推荐事项（`is_hot`、`is_recommend`） | `GuideConfigModule` / `guide_item_config` |
 | 已发布通知公告摘要（首页展示用） | `ContentModule` / `content_item`（published） |
 
-群众端 Public Home API 由后端 **组合读取** 上述来源，详见 `api-spec.md` 第十章。
+群众端 Public Home API 由后端 **组合读取** 上述来源，详见 `api-spec.md` 第十章。无已发布配置时返回 **HTTP 503**（信封 `code=503`、`data=null`）。
 
 ---
 

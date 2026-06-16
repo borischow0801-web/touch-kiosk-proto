@@ -46,6 +46,16 @@ export function usePermission() {
     () => canReadDept.value || canReadTheme.value || canReadGuideItem.value,
   )
 
+  const canReadHomeConfig = computed(() => auth.hasPermission('home:config:read'))
+  const canUpdateHomeConfig = computed(() => auth.hasPermission('home:config:update'))
+  const canReadHomeModule = computed(() => auth.hasPermission('home:module:read'))
+  const canCreateHomeModule = computed(() => auth.hasPermission('home:module:create'))
+  const canUpdateHomeModule = computed(() => auth.hasPermission('home:module:update'))
+  const canDeleteHomeModule = computed(() => auth.hasPermission('home:module:delete'))
+  const canSortHomeModule = computed(() => auth.hasPermission('home:module:sort'))
+
+  const showHomeMenu = computed(() => canReadHomeConfig.value)
+
   function hasPermission(code: string): boolean {
     return auth.hasPermission(code)
   }
@@ -85,6 +95,14 @@ export function usePermission() {
     canUpdateGuideItem,
     canDeleteGuideItem,
     showGuideMenu,
+    canReadHomeConfig,
+    canUpdateHomeConfig,
+    canReadHomeModule,
+    canCreateHomeModule,
+    canUpdateHomeModule,
+    canDeleteHomeModule,
+    canSortHomeModule,
+    showHomeMenu,
     hasPermission,
     hasAnyPermission,
   }

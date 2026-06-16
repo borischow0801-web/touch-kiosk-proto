@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>政务公开触摸查询系统 - 首页 UI 原型</title>
+  <style>
+    :root {
+      --sky-0: #dff1ff;
+      --sky-1: #b9ddff;
+      --sky-2: #f7fcff;
+      --sea-0: #8ed0ff;
+      --sea-1: #50a4e6;
+      --sea-2: #1477bf;
+      --ink: #17395e;
+      --muted: #607894;
+      --blue: #0c7fd1;
+      --blue-2: #3aa7ed;
+      --cyan: #17b7c8;
+      --gold: #f4b63e;
+      --green: #16a978;
+      --rose: #e88c84;
+      --glass: rgba(255, 255, 255, 0.72);
+      --glass-strong: rgba(255, 255, 255, 0.88);
+      --line: rgba(255, 255, 255, 0.72);
+      --shadow: 0 24px 68px rgba(31, 95, 151, 0.18);
+      --shadow-soft: 0 14px 34px rgba(31, 95, 151, 0.12);
+      --radius-xl: 34px;
+      --radius-lg: 28px;
+      --radius-md: 22px;
+      --page-w: 1080px;
+      --page-h: 1920px;
+      font-family: "HarmonyOS Sans SC", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(126, 193, 255, 0.28), transparent 36%),
+        #e8edf3;
+      color: var(--ink);
+    }
+
+    .prototype-shell {
+      width: var(--page-w);
+      height: var(--page-h);
+      background: #f4faff;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .kiosk-page {
+      width: var(--page-w);
+      height: var(--page-h);
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, #ffffff 0%, #f1f8ff 40%, #eef7ff 100%);
+    }
+
+    @supports not (width: min(1px, 1px)) {
+      .prototype-shell {
+        width: 1080px;
+        height: 1920px;
+      }
+
+      .kiosk-page {
+        transform: none;
+      }
+    }
+
+    .hero {
+      height: 590px;
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, var(--sky-1) 0%, var(--sky-0) 34%, var(--sky-2) 74%, #ffffff 100%);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 16% 16%, rgba(255, 255, 255, 0.86) 0 42px, transparent 43px),
+        radial-gradient(circle at 21% 18%, rgba(255, 255, 255, 0.72) 0 56px, transparent 57px),
+        radial-gradient(circle at 72% 15%, rgba(255, 255, 255, 0.72) 0 54px, transparent 55px),
+        radial-gradient(circle at 79% 17%, rgba(255, 255, 255, 0.62) 0 42px, transparent 43px);
+      opacity: 0.72;
+      filter: blur(1px);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      left: -80px;
+      right: -80px;
+      bottom: -54px;
+      height: 265px;
+      background:
+        radial-gradient(ellipse at 50% -8%, rgba(255, 255, 255, 0.76) 0 36%, transparent 37%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.48) 0%, rgba(114, 196, 248, 0.28) 45%, rgba(68, 157, 222, 0.26) 100%);
+      border-radius: 50% 50% 0 0 / 26% 26% 0 0;
+    }
+
+    .hero-top {
+      position: relative;
+      z-index: 5;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 42px 60px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 168px;
+      height: 112px;
+      flex: 0 0 auto;
+      filter: drop-shadow(0 8px 18px rgba(30, 92, 148, 0.18));
+    }
+
+    .title-block {
+      min-width: 0;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 52px;
+      line-height: 1.08;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #15395f;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, 0.62);
+    }
+
+    .subtitle {
+      margin: 14px 0 0;
+      font-size: 28px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    .clock-card {
+      width: 196px;
+      padding: 18px 20px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.62);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      text-align: right;
+      backdrop-filter: blur(16px);
+    }
+
+    .clock-card strong {
+      display: block;
+      font-size: 30px;
+      line-height: 1.15;
+      color: var(--blue);
+    }
+
+    .clock-card span {
+      display: block;
+      margin-top: 8px;
+      font-size: 20px;
+      color: var(--muted);
+    }
+
+    .gate-scene {
+      position: absolute;
+      z-index: 2;
+      left: 50%;
+      bottom: 8px;
+      width: 650px;
+      height: 380px;
+      transform: translateX(-50%);
+    }
+
+    .gate-shadow {
+      position: absolute;
+      left: 50%;
+      bottom: 16px;
+      width: 570px;
+      height: 74px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(47, 139, 207, 0.22) 0%, rgba(47, 139, 207, 0.08) 52%, transparent 72%);
+      filter: blur(8px);
+    }
+
+    .gate {
+      position: absolute;
+      left: 50%;
+      bottom: 44px;
+      width: 530px;
+      height: 300px;
+      transform: translateX(-50%);
+    }
+
+    .gate .outer {
+      position: absolute;
+      inset: 0;
+      border: 24px solid rgba(255, 255, 255, 0.9);
+      border-bottom: none;
+      border-radius: 265px 265px 0 0;
+      box-shadow:
+        0 18px 42px rgba(57, 144, 210, 0.12),
+        inset 0 0 0 2px rgba(91, 164, 232, 0.18),
+        inset 0 18px 48px rgba(255, 255, 255, 0.38);
+    }
+
+    .gate .inner {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 360px;
+      height: 224px;
+      transform: translateX(-50%);
+      border: 10px solid rgba(99, 174, 230, 0.42);
+      border-bottom: none;
+      border-radius: 185px 185px 0 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04));
+    }
+
+    .gate .beam {
+      position: absolute;
+      top: 76px;
+      left: 50%;
+      width: 456px;
+      height: 16px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.96), transparent);
+      box-shadow: 0 4px 20px rgba(69, 151, 218, 0.2);
+    }
+
+    .gate .pillar {
+      position: absolute;
+      bottom: 0;
+      width: 28px;
+      height: 188px;
+      border-radius: 12px 12px 0 0;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.98), rgba(206, 232, 250, 0.86), rgba(255, 255, 255, 0.92));
+      box-shadow: inset -4px 0 12px rgba(61, 144, 207, 0.16);
+    }
+
+    .gate .pillar.left {
+      left: 54px;
+      transform: rotate(-5deg);
+    }
+
+    .gate .pillar.right {
+      right: 54px;
+      transform: rotate(5deg);
+    }
+
+    .gate-reflection {
+      position: absolute;
+      left: 50%;
+      bottom: -6px;
+      width: 480px;
+      height: 118px;
+      transform: translateX(-50%) scaleY(-0.42);
+      border: 11px solid rgba(79, 163, 226, 0.17);
+      border-bottom: none;
+      border-radius: 240px 240px 0 0;
+      filter: blur(2px);
+      opacity: 0.62;
+    }
+
+    .hero-banner {
+      position: absolute;
+      z-index: 6;
+      left: 60px;
+      right: 60px;
+      bottom: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      min-height: 58px;
+      padding: 12px 30px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.46);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(18px);
+      color: #42617f;
+      font-size: 24px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .hero-banner b {
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .main {
+      height: 1214px;
+      position: relative;
+      padding: 36px 46px 30px;
+      background:
+        radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.92) 0 0, transparent 310px),
+        radial-gradient(circle at 88% 24%, rgba(187, 226, 255, 0.38) 0 0, transparent 360px),
+        linear-gradient(180deg, #f7fbff 0%, #eef8ff 100%);
+    }
+
+    .main::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(120deg, rgba(91, 164, 232, 0.045) 0 1px, transparent 1px),
+        linear-gradient(60deg, rgba(255, 255, 255, 0.4) 0 1px, transparent 1px);
+      background-size: 88px 88px;
+      opacity: 0.62;
+      pointer-events: none;
+    }
+
+    .section-title {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 34px;
+      line-height: 1.2;
+      color: #1c426a;
+    }
+
+    .section-title p {
+      margin: 0;
+      font-size: 22px;
+      color: var(--muted);
+    }
+
+    .home-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 22px;
+    }
+
+    .card {
+      min-height: 148px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.88) 0%, rgba(231, 245, 255, 0.66) 48%, rgba(255, 255, 255, 0.78) 100%);
+      box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(18px) saturate(1.08);
+      padding: 30px 32px;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 8%, rgba(255, 255, 255, 0.76), transparent 33%),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.45), transparent 42%);
+      pointer-events: none;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 12%;
+      right: 12%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.98), transparent);
+    }
+
+    .card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .xl {
+      grid-column: span 12;
+      min-height: 208px;
+      border-radius: var(--radius-xl);
+    }
+
+    .banner {
+      grid-column: span 12;
+      min-height: 118px;
+      border-radius: var(--radius-lg);
+    }
+
+    .large {
+      grid-column: span 7;
+      min-height: 216px;
+    }
+
+    .medium {
+      grid-column: span 5;
+      min-height: 174px;
+    }
+
+    .half {
+      grid-column: span 6;
+      min-height: 174px;
+    }
+
+    .small {
+      grid-column: span 4;
+      min-height: 146px;
+    }
+
+    .hot-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+      background:
+        radial-gradient(circle at 82% 20%, rgba(255, 255, 255, 0.36), transparent 28%),
+        linear-gradient(135deg, #0d88d7 0%, #17b7c8 55%, #6fc9ff 100%);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: 0 26px 70px rgba(19, 130, 210, 0.25);
+    }
+
+    .hot-label {
+      display: inline-flex;
+      align-items: center;
+      height: 38px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.22);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .hot-card h3 {
+      margin: 18px 0 0;
+      font-size: 50px;
+      line-height: 1.1;
+      font-weight: 800;
+    }
+
+    .hot-card p {
+      margin: 12px 0 0;
+      font-size: 25px;
+      opacity: 0.88;
+    }
+
+    .hot-orb {
+      width: 168px;
+      height: 168px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 36% 30%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.3) 28%, transparent 29%),
+        radial-gradient(circle, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.08) 60%, transparent 61%);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+    }
+
+    .honor-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background:
+        radial-gradient(circle at 8% 50%, rgba(244, 182, 62, 0.18), transparent 32%),
+        linear-gradient(120deg, rgba(255, 246, 234, 0.94) 0%, rgba(255, 255, 255, 0.82) 54%, rgba(255, 236, 232, 0.78) 100%);
+      border-color: rgba(244, 182, 62, 0.38);
+    }
+
+    .honor-card .ribbon {
+      display: inline-flex;
+      align-items: center;
+      height: 34px;
+      padding: 0 16px;
+      border-radius: 999px;
+      background: rgba(244, 182, 62, 0.18);
+      color: #a96700;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .honor-card h3 {
+      margin: 10px 0 0;
+      font-size: 42px;
+      line-height: 1.18;
+      color: #7a3b38;
+    }
+
+    .honor-card p {
+      margin: 8px 0 0;
+      font-size: 23px;
+      color: #8b6a68;
+    }
+
+    .honor-medal {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 35% 30%, #fff8d6, #f4b63e 64%, #d78a00 100%);
+      color: #7a3b00;
+      font-size: 38px;
+      font-weight: 900;
+      box-shadow: 0 12px 26px rgba(208, 130, 0, 0.22);
+    }
+
+    .module-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .module-card .meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .module-icon {
+      width: 74px;
+      height: 74px;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, rgba(12, 127, 209, 0.13), rgba(255, 255, 255, 0.55));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .module-icon svg {
+      width: 42px;
+      height: 42px;
+      stroke: var(--accent, var(--blue));
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .module-card h3 {
+      margin: 22px 0 0;
+      font-size: 39px;
+      line-height: 1.18;
+      color: #17395e;
+      font-weight: 800;
+    }
+
+    .module-card p {
+      margin: 12px 0 0;
+      font-size: 24px;
+      color: var(--muted);
+    }
+
+    .module-card .arrow {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--accent, var(--blue));
+      font-size: 32px;
+      line-height: 1;
+      box-shadow: 0 10px 18px rgba(12, 127, 209, 0.22);
+    }
+
+    .accent-policy {
+      --accent: #0c7fd1;
+    }
+
+    .accent-topic {
+      --accent: #17b7c8;
+    }
+
+    .accent-dept {
+      --accent: #16a978;
+    }
+
+    .accent-faq {
+      --accent: #f4b63e;
+    }
+
+    .accent-nav {
+      --accent: #6168d9;
+    }
+
+    .accent-notice {
+      --accent: #ef7f5a;
+    }
+
+    .bottom-nav {
+      height: 116px;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 12px 42px 18px;
+      gap: 18px;
+      background: rgba(255, 255, 255, 0.82);
+      border-top: 1px solid rgba(91, 164, 232, 0.2);
+      backdrop-filter: blur(22px);
+      box-shadow: 0 -14px 42px rgba(30, 80, 140, 0.08);
+    }
+
+    .nav-item {
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 28px;
+      font-weight: 800;
+      color: #1e3a5f;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(145deg, rgba(12, 127, 209, 0.12), rgba(255, 255, 255, 0.5));
+      color: var(--blue);
+    }
+
+    .nav-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.72;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .hero::before {
+        animation: cloud-drift 18s ease-in-out infinite alternate;
+      }
+
+      .hero::after {
+        animation: sea-breathe 8s ease-in-out infinite alternate;
+      }
+
+      .card {
+        animation: card-in 280ms ease-out both;
+      }
+
+      .card:nth-child(2) {
+        animation-delay: 40ms;
+      }
+
+      .card:nth-child(3) {
+        animation-delay: 80ms;
+      }
+
+      .card:nth-child(4) {
+        animation-delay: 120ms;
+      }
+
+      .card:nth-child(5) {
+        animation-delay: 160ms;
+      }
+
+      .card:nth-child(6) {
+        animation-delay: 200ms;
+      }
+
+      @keyframes cloud-drift {
+        from { transform: translateX(-10px); }
+        to { transform: translateX(14px); }
+      }
+
+      @keyframes sea-breathe {
+        from { transform: translateY(0); }
+        to { transform: translateY(8px); }
+      }
+
+      @keyframes card-in {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="prototype-shell" aria-label="1080x1920 竖屏首页原型">
+    <main class="kiosk-page">
+      <section class="hero" aria-label="顶部展示区">
+        <div class="hero-top">
+          <div class="brand">
+            <img class="brand-mark" src="./assets/brand-logo.png" alt="三色弧形标志" />
+            <div class="title-block">
+              <h1 class="title">政务公开触摸查询系统</h1>
+              <p class="subtitle">公开透明 · 便民服务 · 智慧大厅</p>
+            </div>
+          </div>
+          <div class="clock-card" aria-label="日期时间">
+            <strong>16:30</strong>
+            <span>2026 年 06 月 16 日</span>
+          </div>
+        </div>
+
+        <div class="gate-scene" aria-hidden="true">
+          <div class="gate-shadow"></div>
+          <div class="gate">
+            <div class="outer"></div>
+            <div class="inner"></div>
+            <div class="beam"></div>
+            <div class="pillar left"></div>
+            <div class="pillar right"></div>
+          </div>
+          <div class="gate-reflection"></div>
+        </div>
+
+        <div class="hero-banner">
+          <span>无需输入，点击下方模块即可查询</span>
+          <b>90 秒无操作自动返回首页</b>
+        </div>
+      </section>
+
+      <section class="main" aria-label="主要触控区">
+        <div class="section-title">
+          <h2>请选择您要查询的内容</h2>
+          <p>主操作区位于屏幕中下部，适合触摸大屏使用</p>
+        </div>
+
+        <div class="home-grid">
+          <article class="card xl hot-card">
+            <div>
+              <span class="hot-label">高频事项</span>
+              <h3>社保查询</h3>
+              <p>快速查看办理指南、材料清单与窗口位置</p>
+            </div>
+            <div class="hot-orb" aria-hidden="true"></div>
+          </article>
+
+          <article class="card banner honor-card">
+            <div>
+              <span class="ribbon">荣誉展示</span>
+              <h3>模范先锋岗</h3>
+              <p>展示优秀窗口、服务标兵与文明大厅建设成果</p>
+            </div>
+            <div class="honor-medal" aria-hidden="true">优</div>
+          </article>
+
+          <article class="card large module-card accent-policy">
+            <div class="meta">
+              <div class="module-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64"><path d="M18 10h22l8 8v36H18z" /><path d="M39 10v10h9" /><path d="M25 30h16M25 40h12" /></svg>
+              </div>
+              <div class="arrow">›</div>
+            </div>
+            <div>
+              <h3>政策公开</h3>
+              <p>查看政策文件、政策解读与主动公开内容</p>
+            </div>
+          </article>
+
+          <article class="card medium module-card accent-topic">
+            <div class="meta">
+              <div class="module-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64"><path d="M32 10l18 10v22L32 54 14 42V20z" /><path d="M32 10v44M14 20l18 12 18-12" /></svg>
+              </div>
+              <div class="arrow">›</div>
+            </div>
+            <div>
+              <h3>按主题查</h3>
+              <p>按生命周期、企业服务等主题选择</p>
+            </div>
+          </article>
+
+          <article class="card medium module-card accent-dept">
+            <div class="meta">
+              <div class="module-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64"><path d="M12 54h40" /><path d="M18 54V20l14-8 14 8v34" /><path d="M25 28h14M25 38h14" /></svg>
+              </div>
+              <div class="arrow">›</div>
+            </div>
+            <div>
+              <h3>按部门查</h3>
+              <p>按大厅部门进入事项列表</p>
+            </div>
+          </article>
+
+          <article class="card medium module-card accent-faq">
+            <div class="meta">
+              <div class="module-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64"><path d="M18 18c3-5 8-8 15-8 9 0 16 6 16 14 0 10-10 12-14 18" /><path d="M34 52h.1" /></svg>
+              </div>
+              <div class="arrow">›</div>
+            </div>
+            <div>
+              <h3>常见问题</h3>
+              <p>常用咨询与办理疑问</p>
+            </div>
+          </article>
+
+          <article class="card small module-card accent-nav">
+            <div class="meta">
+              <div class="module-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64"><path d="M14 52V18l14-6 12 6 10-4v34l-10 4-12-6z" /><path d="M28 12v34M40 18v34" /></svg>
+              </div>
+              <div class="arrow">›</div>
+            </div>
+            <div>
+              <h3>窗口导航</h3>
+              <p>楼层、区域、窗口位置</p>
+            </div>
+          </article>
+
+          <article class="card small module-card accent-notice">
+            <div class="meta">
+              <div class="module-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64"><path d="M18 14h28v38H18z" /><path d="M25 24h14M25 34h14M25 44h10" /></svg>
+              </div>
+              <div class="arrow">›</div>
+            </div>
+            <div>
+              <h3>通知公告</h3>
+              <p>大厅公告与服务提醒</p>
+            </div>
+          </article>
+
+          <article class="card small module-card accent-policy">
+            <div class="meta">
+              <div class="module-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64"><path d="M16 16h32v34H16z" /><path d="M24 26h16M24 36h16" /></svg>
+              </div>
+              <div class="arrow">›</div>
+            </div>
+            <div>
+              <h3>信息公开</h3>
+              <p>指南、制度、目录</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <nav class="bottom-nav" aria-label="底部导航">
+        <div class="nav-item active"><span class="nav-dot"></span>首页</div>
+        <div class="nav-item"><span class="nav-dot"></span>返回</div>
+        <div class="nav-item"><span class="nav-dot"></span>重来</div>
+        <div class="nav-item"><span class="nav-dot"></span>帮助</div>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

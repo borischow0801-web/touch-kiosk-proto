@@ -1,9 +1,9 @@
 # 046 · Step 14B-1 首页配置数据库与 API 基线统一
 
-**交付日期**：2026-06-12  
+**交付日期**：2026-06-15
 **基于**：045-step14a-home-config-design-review.md  
 **执行方**：Cursor  
-**状态**：通过（纯文档基线，未进入实现）
+**状态**：通过（纯文档基线，未进入实现；状态机与 503 语义经 **047 · 14B-1A** 最终收口）
 
 ---
 
@@ -101,7 +101,7 @@ publish_record
 
 | 接口 | 要点 |
 |---|---|
-| `GET/PUT /api/admin/home/config` | 操作/返回 **当前草稿版本** 的 title、subtitle、topBannerJson、themeJson |
+| `GET/PUT /api/admin/home/config` | 操作/返回 **当前草稿版本**；`PUT` 为唯一编辑入口（*draft 显式 POST 已废止，见 047*） |
 | `GET/POST/PUT/DELETE /api/admin/home/modules*` | 仅当前草稿版本；DELETE 为逻辑删除 |
 | `PUT /api/admin/home/modules/sort` | `{ items: [{ id, sortOrder }] }` |
 | `/api/admin/publish/home_config/:bizId/*` | `bizId` = `home_config.id`；rollback 需 `versionId` |
@@ -117,7 +117,7 @@ publish_record
 
 **不返回**：draft / pending / rejected / withdrawn / archived 及后台审计字段。
 
-**无已发布配置**：HTTP 200 + 信封 `code=503`，`data=null`；群众端本地离线配置兜底。
+**无已发布配置**：**HTTP 503**，响应信封 `code=503`、`data=null`；群众端本地离线配置兜底。（*503 语义经 047 · 14B-1A 收口为 HTTP 503，非 HTTP 200。*）
 
 ---
 

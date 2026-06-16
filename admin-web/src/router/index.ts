@@ -14,6 +14,7 @@ const ContentItemVersionsPage = () => import('@/pages/content/ContentItemVersion
 const GuideDeptPage = () => import('@/pages/guide/GuideDeptPage.vue')
 const GuideThemePage = () => import('@/pages/guide/GuideThemePage.vue')
 const GuideItemConfigPage = () => import('@/pages/guide/GuideItemConfigPage.vue')
+const HomeConfigPage = () => import('@/pages/home/HomeConfigPage.vue')
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -87,6 +88,12 @@ export const routes: RouteRecordRaw[] = [
         name: 'guide-item-configs',
         component: GuideItemConfigPage,
         meta: { title: '事项展示配置', permission: 'guide:item:read' },
+      },
+      {
+        path: 'home/config',
+        name: 'home-config',
+        component: HomeConfigPage,
+        meta: { title: '首页配置', permission: 'home:config:read' },
       },
       {
         path: ':pathMatch(.*)*',

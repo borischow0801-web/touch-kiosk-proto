@@ -18,7 +18,11 @@ function stubAppConfigFetch() {
         data: {
           title: '测试大厅',
           idleSeconds: 90,
+          bannerLines: [],
+          theme: {},
+          modules: [],
           homeHotItems: [],
+          noticeSummaries: [],
           nav: [
             { label: '首页', to: '/home' },
             { label: '返回', to: 'BACK' },

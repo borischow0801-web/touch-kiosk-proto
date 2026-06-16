@@ -24,6 +24,10 @@
           <el-menu-item v-if="perm.canReadTheme" index="/guide/themes">主题映射</el-menu-item>
           <el-menu-item v-if="perm.canReadGuideItem" index="/guide/item-configs">事项展示配置</el-menu-item>
         </el-sub-menu>
+        <el-menu-item v-if="perm.showHomeMenu" index="/home/config">
+          <el-icon><House /></el-icon>
+          <span>首页配置</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -45,7 +49,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Document, Notebook, Odometer } from '@element-plus/icons-vue'
+import { Document, House, Notebook, Odometer } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { usePermission } from '@/composables/usePermission'
 

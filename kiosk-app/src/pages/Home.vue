@@ -1,73 +1,102 @@
 <template>
-  <div class="space-y-6">
-    <div class="grid grid-cols-1 gap-5">
-      <BigButton
+  <div class="kiosk-home-stack">
+    <div v-if="hotItems.length" class="home-module-grid">
+      <HomeHotItemCard
         v-for="it in hotItems"
-        :key="it.id"
-        :title="it.name"
-        :heightPx="160"
-        @click="openItem(it.id)"
+        :key="it.itemId"
+        :item="it"
+        @click="openItem(it.itemId)"
       />
     </div>
 
-    <div class="grid grid-cols-2 gap-5 pt-2">
-      <BigButton title="按部门查" subtitle="选择部门 → 事项类型 → 事项" :heightPx="160" @click="go('/depts')" />
-      <BigButton title="按主题查" subtitle="选择主题 → 事项类型 → 事项" :heightPx="160" @click="go('/topics')" />
-    </div>
+    <HomeModuleGrid
+      v-if="modules.length"
+      :modules="modules"
+      @select="onModuleClick"
+    />
 
-    <div class="pt-4">
-      <div class="text-4xl font-bold text-slate-900 mb-4">政务公开</div>
-      <div class="grid grid-cols-2 gap-5">
-        <BigButton
-          v-for="mod in contentModules"
-          :key="mod.routeKey"
-          :title="mod.homeLabel"
-          :subtitle="mod.supportsDetail ? '点击查看列表' : '仅列表浏览'"
-          :heightPx="140"
-          @click="openContent(mod.routeKey)"
-        />
+    <div v-if="notices.length" class="home-notices">
+      <div class="home-notices__title">通知公告</div>
+      <div class="home-module-grid">
+        <button
+          v-for="(notice, idx) in notices"
+          :key="notice.id"
+          type="button"
+          class="home-notice-card liquid-glass home-enter home-layout-full"
+          :style="{ animationDelay: `${idx * 40}ms` }"
+          @click="openNotice(notice.id)"
+        >
+          <span class="home-notice-card__title">{{ notice.title }}</span>
+          <span v-if="notice.summary" class="home-notice-card__summary">{{ notice.summary }}</span>
+        </button>
       </div>
-    </div>
-
-    <div v-if="err" class="rounded-2xl bg-white border border-rose-200 p-6">
-      <div class="text-3xl text-rose-700">数据加载失败</div>
-      <div class="text-3xl text-slate-500 mt-2">{{ err }}</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import BigButton from '../components/BigButton.vue'
-import { getConfig } from '../api/endpoints'
-import type { HotItem } from '../api/types'
-import { HOME_CONTENT_MODULES } from '../content/modules'
+import HomeHotItemCard from '../components/home/HomeHotItemCard.vue'
+import HomeModuleGrid from '../components/home/HomeModuleGrid.vue'
+import type { PublicHomeModule } from '../api/types'
+import { useHomeConfigStore } from '../stores/homeConfig'
+import { navigateHomeModule } from '../utils/homeModuleNav'
 
 const router = useRouter()
-const hotItems = ref<HotItem[]>([])
-const err = ref('')
-const contentModules = HOME_CONTENT_MODULES
+const homeConfig = useHomeConfigStore()
 const navigating = ref(false)
 
-function go(path: string) { void router.push(path) }
-function openItem(id: string) { void router.push(`/items/${id}`) }
+const hotItems = computed(() => homeConfig.effectiveConfig.homeHotItems)
+const modules = computed(() => homeConfig.effectiveConfig.modules)
+const notices = computed(() => homeConfig.effectiveConfig.noticeSummaries)
 
-async function openContent(routeKey: string) {
+function openItem(itemId: string) {
+  void router.push(`/items/${itemId}`)
+}
+
+function openNotice(id: string) {
+  void router.push(`/content/notices/${encodeURIComponent(id)}`)
+}
+
+async function onModuleClick(mod: PublicHomeModule) {
   if (navigating.value) return
   navigating.value = true
   try {
-    await router.push(`/content/${routeKey}`)
+    await navigateHomeModule(router, mod)
   } finally {
     navigating.value = false
   }
 }
-
-onMounted(async () => {
-  try {
-    hotItems.value = (await getConfig()).homeHotItems ?? []
-  } catch (e: unknown) {
-    err.value = e instanceof Error ? e.message : String(e)
-  }
-})
 </script>
+
+<style scoped>
+.home-notices__title {
+  font-size: var(--kiosk-font-h2);
+  font-weight: 700;
+  color: var(--kiosk-color-ink);
+  margin-bottom: var(--kiosk-space-md);
+}
+
+.home-notice-card {
+  width: 100%;
+  min-height: var(--kiosk-card-height-m);
+  padding: var(--kiosk-space-lg);
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-notice-card__title {
+  display: block;
+  font-size: var(--kiosk-font-h3);
+  font-weight: 600;
+  color: var(--kiosk-color-ink);
+}
+
+.home-notice-card__summary {
+  display: block;
+  margin-top: var(--kiosk-space-xs);
+  font-size: var(--kiosk-font-caption);
+  color: var(--kiosk-color-mist);
+}
+</style>

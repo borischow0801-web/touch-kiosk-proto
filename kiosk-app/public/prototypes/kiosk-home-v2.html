@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>群众端首页 UI 原型 V2</title>
+  <style>
+    :root {
+      --ink: #073467;
+      --blue: #147ee8;
+      --cyan: #18c9d2;
+      --mint: #63e0cc;
+      --purple: #6e7ff0;
+      --gold: #f3b43d;
+      --orange: #ef8c4d;
+      --rose: #ee7c72;
+      --shadow-blue: rgba(34, 119, 204, 0.28);
+      --soft-shadow: 0 18px 42px rgba(37, 111, 185, 0.18);
+      font-family: "HarmonyOS Sans SC", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #dfe4ea;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    .screen {
+      position: relative;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, #49b6f4 0%, #aee5ff 27%, #eefaff 43%, #f5fbff 100%);
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.22);
+    }
+
+    .hero {
+      position: relative;
+      height: 695px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.96) 0 60px, rgba(255, 255, 255, 0.28) 61px 150px, transparent 151px),
+        linear-gradient(160deg, rgba(255, 255, 255, 0.88) 0%, transparent 30%),
+        linear-gradient(180deg, #2aaef2 0%, #79d2ff 45%, #dff7ff 100%);
+    }
+
+    .sun-rays {
+      position: absolute;
+      inset: -80px -40px auto -80px;
+      height: 380px;
+      background:
+        conic-gradient(from 126deg at 4% 0%, rgba(255,255,255,0.8), rgba(255,255,255,0) 14deg, rgba(255,255,255,0.46) 24deg, rgba(255,255,255,0) 42deg);
+      opacity: 0.78;
+      filter: blur(1px);
+    }
+
+    .cloud {
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.88);
+      filter: drop-shadow(0 10px 16px rgba(70, 150, 210, 0.08));
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: inherit;
+    }
+
+    .cloud::before {
+      width: 48%;
+      height: 150%;
+      left: 16%;
+      bottom: 0;
+    }
+
+    .cloud::after {
+      width: 58%;
+      height: 180%;
+      right: 12%;
+      bottom: -4%;
+    }
+
+    .cloud-a {
+      width: 260px;
+      height: 62px;
+      left: -20px;
+      top: 270px;
+      opacity: 0.86;
+    }
+
+    .cloud-b {
+      width: 230px;
+      height: 58px;
+      right: 30px;
+      top: 350px;
+      opacity: 0.78;
+    }
+
+    .cloud-c {
+      width: 150px;
+      height: 40px;
+      right: 150px;
+      top: 90px;
+      opacity: 0.38;
+    }
+
+    .birds {
+      position: absolute;
+      right: 82px;
+      top: 118px;
+      width: 150px;
+      height: 70px;
+      opacity: 0.95;
+    }
+
+    .bird {
+      position: absolute;
+      width: 34px;
+      height: 14px;
+      border-top: 4px solid white;
+      border-radius: 50%;
+      transform: rotate(12deg);
+    }
+
+    .bird::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: -4px;
+      width: 34px;
+      height: 14px;
+      border-top: 4px solid white;
+      border-radius: 50%;
+      transform: rotate(-24deg);
+      transform-origin: left top;
+    }
+
+    .bird:nth-child(2) {
+      left: 62px;
+      top: 22px;
+      transform: scale(0.84) rotate(8deg);
+    }
+
+    .bird:nth-child(3) {
+      left: 112px;
+      top: 0;
+      transform: scale(0.72) rotate(14deg);
+    }
+
+    .hero-title {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      padding-top: 78px;
+      text-align: center;
+    }
+
+    .logo {
+      width: 190px;
+      height: auto;
+      filter: drop-shadow(0 10px 14px rgba(0, 65, 130, 0.18));
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 58px;
+      line-height: 1.06;
+      letter-spacing: 2px;
+      color: #08366c;
+      font-weight: 900;
+      text-shadow: 0 3px 0 rgba(255, 255, 255, 0.56);
+    }
+
+    .slogan {
+      position: relative;
+      z-index: 4;
+      margin-top: 22px;
+      text-align: center;
+      font-size: 30px;
+      letter-spacing: 12px;
+      color: #123d78;
+      font-weight: 600;
+    }
+
+    .ribbon-line {
+      position: absolute;
+      left: -80px;
+      right: -80px;
+      height: 96px;
+      border: 8px solid rgba(255, 255, 255, 0.7);
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 50%;
+      opacity: 0.72;
+      filter: blur(0.2px);
+    }
+
+    .ribbon-1 {
+      top: 225px;
+      transform: rotate(-8deg);
+    }
+
+    .ribbon-2 {
+      top: 515px;
+      transform: rotate(5deg);
+      opacity: 0.55;
+    }
+
+    .bay {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 240px;
+      background:
+        linear-gradient(180deg, rgba(103, 200, 255, 0.15) 0%, rgba(30, 146, 216, 0.56) 52%, rgba(22, 133, 200, 0.68) 100%);
+    }
+
+    .bay::before {
+      content: "";
+      position: absolute;
+      left: -80px;
+      right: -80px;
+      top: -58px;
+      height: 126px;
+      border-radius: 0 0 50% 50%;
+      background: rgba(255, 255, 255, 0.82);
+      transform: rotate(-1deg);
+    }
+
+    .mountain {
+      position: absolute;
+      left: -30px;
+      right: -30px;
+      bottom: 190px;
+      height: 130px;
+      background:
+        linear-gradient(135deg, transparent 0 12%, rgba(54, 127, 172, 0.42) 12% 22%, transparent 22% 30%, rgba(45, 117, 160, 0.36) 30% 48%, transparent 48% 56%, rgba(55, 131, 176, 0.32) 56% 70%, transparent 70%);
+      opacity: 0.58;
+      filter: blur(0.3px);
+    }
+
+    .city {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 205px;
+      height: 92px;
+      opacity: 0.7;
+      background:
+        linear-gradient(90deg, transparent 0 4%, rgba(255,255,255,0.75) 4% 5.8%, transparent 5.8% 8%),
+        repeating-linear-gradient(90deg, transparent 0 42px, rgba(255,255,255,0.58) 42px 54px, transparent 54px 76px);
+    }
+
+    .sail {
+      position: absolute;
+      left: 56px;
+      bottom: 214px;
+      width: 92px;
+      height: 120px;
+      opacity: 0.92;
+    }
+
+    .sail::before {
+      content: "";
+      position: absolute;
+      left: 36px;
+      bottom: 0;
+      width: 2px;
+      height: 116px;
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .sail::after {
+      content: "";
+      position: absolute;
+      left: 38px;
+      bottom: 10px;
+      border-left: 54px solid rgba(255, 255, 255, 0.86);
+      border-top: 92px solid transparent;
+      filter: drop-shadow(0 8px 14px rgba(16, 110, 180, 0.14));
+    }
+
+    .gate {
+      position: absolute;
+      z-index: 3;
+      left: 50%;
+      bottom: 132px;
+      width: 365px;
+      height: 345px;
+      transform: translateX(-50%);
+      filter: drop-shadow(0 24px 30px rgba(20, 94, 160, 0.22));
+    }
+
+    .gate .top,
+    .gate .left,
+    .gate .right {
+      position: absolute;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.92), rgba(151,221,255,0.5) 45%, rgba(255,255,255,0.76));
+      border: 3px solid rgba(255,255,255,0.9);
+      box-shadow:
+        inset 0 0 24px rgba(255,255,255,0.62),
+        inset 0 -10px 22px rgba(33,132,204,0.16);
+    }
+
+    .gate .top {
+      left: 0;
+      top: 0;
+      width: 365px;
+      height: 72px;
+      transform: skewX(-6deg);
+    }
+
+    .gate .left,
+    .gate .right {
+      top: 58px;
+      width: 68px;
+      height: 286px;
+    }
+
+    .gate .left {
+      left: 16px;
+      transform: skewY(-5deg);
+    }
+
+    .gate .right {
+      right: 16px;
+      transform: skewY(5deg);
+    }
+
+    .gate .truss {
+      position: absolute;
+      inset: 14px 20px;
+      background:
+        linear-gradient(45deg, transparent 0 46%, rgba(255,255,255,0.9) 47% 50%, transparent 51%),
+        linear-gradient(-45deg, transparent 0 46%, rgba(255,255,255,0.66) 47% 50%, transparent 51%);
+      background-size: 34px 34px;
+      opacity: 0.58;
+      mix-blend-mode: screen;
+    }
+
+    .gate-base {
+      position: absolute;
+      z-index: 2;
+      left: 50%;
+      bottom: 118px;
+      width: 500px;
+      height: 54px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(255,255,255,0.94), rgba(95,186,240,0.28) 52%, transparent 70%);
+    }
+
+    .wave-front {
+      position: absolute;
+      z-index: 5;
+      left: -40px;
+      right: -40px;
+      bottom: -8px;
+      height: 122px;
+      background:
+        radial-gradient(ellipse at 52% 0%, rgba(255,255,255,0.88) 0 50%, transparent 51%),
+        linear-gradient(180deg, rgba(255,255,255,0.86), rgba(238,250,255,0.96));
+      border-radius: 50% 50% 0 0 / 48% 48% 0 0;
+    }
+
+    .dots {
+      position: absolute;
+      z-index: 8;
+      left: 50%;
+      bottom: 36px;
+      display: flex;
+      gap: 18px;
+      transform: translateX(-50%);
+    }
+
+    .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: rgba(20, 126, 232, 0.2);
+    }
+
+    .dot.active {
+      width: 18px;
+      background: var(--blue);
+    }
+
+    .content {
+      position: relative;
+      height: 1109px;
+      padding: 22px 72px 0;
+      background:
+        radial-gradient(circle at 50% -6%, rgba(103, 196, 255, 0.18), transparent 360px),
+        linear-gradient(180deg, #f9fdff 0%, #eef9ff 100%);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 26px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 34px;
+      min-height: 180px;
+      padding: 34px 36px;
+      border: 2px solid rgba(255,255,255,0.78);
+      box-shadow:
+        0 20px 42px rgba(46, 122, 193, 0.18),
+        inset 0 2px 0 rgba(255,255,255,0.95),
+        inset 0 -2px 0 rgba(255,255,255,0.36);
+      backdrop-filter: blur(18px);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 80% 68%, rgba(255,255,255,0.46), transparent 30%),
+        linear-gradient(160deg, rgba(255,255,255,0.38), transparent 45%);
+      pointer-events: none;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      right: 34px;
+      bottom: 18px;
+      width: 178px;
+      height: 74px;
+      border: 2px solid rgba(255,255,255,0.28);
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 18px rgba(255,255,255,0.08),
+        0 0 0 36px rgba(255,255,255,0.04);
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+      min-height: 100%;
+    }
+
+    .card h2,
+    .card h3 {
+      margin: 0;
+      line-height: 1.12;
+      font-weight: 900;
+    }
+
+    .card h2 {
+      font-size: 47px;
+      color: #fff;
+      text-shadow: 0 3px 8px rgba(0, 54, 110, 0.14);
+    }
+
+    .card h3 {
+      font-size: 41px;
+      color: #073467;
+    }
+
+    .card p {
+      margin: 16px 0 0;
+      font-size: 25px;
+      line-height: 1.3;
+      font-weight: 500;
+    }
+
+    .arrow {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.55);
+      color: currentColor;
+      font-size: 38px;
+      font-weight: 500;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .illus {
+      position: absolute;
+      right: 28px;
+      bottom: 28px;
+      width: 160px;
+      height: 150px;
+      opacity: 0.9;
+      filter: drop-shadow(0 16px 18px rgba(0, 94, 190, 0.16));
+    }
+
+    .big {
+      grid-column: span 6;
+      min-height: 285px;
+    }
+
+    .medium {
+      grid-column: span 6;
+      min-height: 220px;
+    }
+
+    .small {
+      grid-column: span 4;
+      min-height: 188px;
+      padding: 30px 32px;
+    }
+
+    .honor {
+      grid-column: span 12;
+      min-height: 170px;
+      color: #b43d32;
+      background:
+        radial-gradient(circle at 83% 18%, rgba(255,255,255,0.72), transparent 22%),
+        linear-gradient(145deg, rgba(255,244,238,0.96), rgba(255,223,211,0.9) 52%, rgba(255,246,236,0.9));
+      border-color: rgba(255,255,255,0.82);
+    }
+
+    .honor h3 {
+      color: #c63e33;
+    }
+
+    .honor::after {
+      width: 360px;
+      height: 120px;
+      right: 180px;
+      bottom: -30px;
+      border-color: rgba(239, 124, 114, 0.2);
+      box-shadow: 0 0 0 24px rgba(239, 124, 114, 0.08), 0 0 0 52px rgba(239, 124, 114, 0.04);
+    }
+
+    .blue-card {
+      color: white;
+      background: linear-gradient(145deg, #1b89ff 0%, #1fb3ff 54%, #5ee1ff 100%);
+    }
+
+    .cyan-card {
+      color: white;
+      background: linear-gradient(145deg, #19b9c8 0%, #21d2d8 54%, #72f0e5 100%);
+    }
+
+    .purple-card {
+      color: #22337e;
+      background: linear-gradient(145deg, rgba(238,239,255,0.96), rgba(215,221,255,0.84) 52%, rgba(255,255,255,0.9));
+    }
+
+    .mint-card {
+      color: #145e61;
+      background: linear-gradient(145deg, rgba(221,255,248,0.98), rgba(184,250,237,0.78) 52%, rgba(255,255,255,0.94));
+    }
+
+    .pale-blue {
+      color: #0a4e93;
+      background: linear-gradient(145deg, rgba(236,248,255,0.96), rgba(197,232,255,0.78) 60%, rgba(255,255,255,0.94));
+    }
+
+    .gold-card {
+      color: #a36600;
+      background: linear-gradient(145deg, rgba(255,248,232,0.98), rgba(255,228,167,0.78) 60%, rgba(255,255,255,0.9));
+    }
+
+    .white-text p,
+    .white-text .arrow {
+      color: rgba(255,255,255,0.9);
+    }
+
+    .nav {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 18px;
+      height: 110px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr 1fr;
+      gap: 14px;
+      padding: 10px 18px;
+      border-radius: 42px;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(255,255,255,0.9);
+      box-shadow: 0 -18px 48px rgba(46, 122, 193, 0.16), inset 0 1px 0 rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      border-radius: 36px;
+      font-size: 29px;
+      font-weight: 800;
+      color: #155aa5;
+    }
+
+    .nav-item.active {
+      color: white;
+      background: linear-gradient(145deg, #1d8cff, #0c72db);
+      box-shadow: 0 14px 28px rgba(20, 126, 232, 0.28), inset 0 2px 0 rgba(255,255,255,0.48);
+    }
+
+    .nav-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: currentColor;
+      color: white;
+      font-size: 25px;
+      line-height: 1;
+    }
+
+    .nav-item.active .nav-icon {
+      background: white;
+      color: var(--blue);
+    }
+  </style>
+</head>
+<body>
+  <main class="screen">
+    <section class="hero">
+      <div class="sun-rays"></div>
+      <div class="cloud cloud-a"></div>
+      <div class="cloud cloud-b"></div>
+      <div class="cloud cloud-c"></div>
+      <div class="birds"><i class="bird"></i><i class="bird"></i><i class="bird"></i></div>
+      <div class="ribbon-line ribbon-1"></div>
+      <div class="ribbon-line ribbon-2"></div>
+
+      <div class="hero-title">
+        <img class="logo" src="./assets/brand-logo.png" alt="三色弧形标志" />
+        <h1>政务公开触摸查询系统</h1>
+      </div>
+      <div class="slogan">便民服务 · 公开透明 · 一触即达</div>
+
+      <div class="mountain"></div>
+      <div class="city"></div>
+      <div class="sail"></div>
+      <div class="bay"></div>
+      <div class="gate-base"></div>
+      <div class="gate" aria-hidden="true">
+        <div class="top"><i class="truss"></i></div>
+        <div class="left"><i class="truss"></i></div>
+        <div class="right"><i class="truss"></i></div>
+      </div>
+      <div class="wave-front"></div>
+      <div class="dots"><span class="dot"></span><span class="dot active"></span><span class="dot"></span></div>
+    </section>
+
+    <section class="content">
+      <div class="grid">
+        <article class="card big blue-card white-text">
+          <div class="card-inner">
+            <h2>高频事项</h2>
+            <p>热门事项　快速办理</p>
+            <span class="arrow">›</span>
+            <svg class="illus" viewBox="0 0 180 160" aria-hidden="true">
+              <path d="M48 34h76a12 12 0 0 1 12 12v78a12 12 0 0 1-12 12H48a12 12 0 0 1-12-12V46a12 12 0 0 1 12-12z" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="8"/>
+              <path d="M72 30a18 18 0 0 1 36 0" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="8"/>
+              <path d="M62 68l12 12 21-25M62 98l12 12 21-25" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="7"/>
+              <path d="M106 70h32M106 100h28" stroke="rgba(255,255,255,.86)" stroke-width="7" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </article>
+
+        <article class="card big mint-card">
+          <div class="card-inner">
+            <h3>政策公开</h3>
+            <p>政策文件　一键查阅</p>
+            <span class="arrow">›</span>
+            <svg class="illus" viewBox="0 0 180 160" aria-hidden="true">
+              <path d="M58 28h66l20 22v78H58z" fill="rgba(24,190,170,.18)" stroke="rgba(14,150,145,.62)" stroke-width="7"/>
+              <path d="M122 28v25h23" fill="none" stroke="rgba(14,150,145,.62)" stroke-width="7"/>
+              <path d="M78 72h44M78 96h44M78 120h32" stroke="rgba(14,150,145,.72)" stroke-width="8" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </article>
+
+        <article class="card medium purple-card">
+          <div class="card-inner">
+            <h3>按主题查</h3>
+            <p>按主题分类查询事项</p>
+            <span class="arrow">›</span>
+            <svg class="illus" viewBox="0 0 180 160" aria-hidden="true">
+              <circle cx="70" cy="66" r="32" fill="rgba(110,127,240,.42)"/>
+              <circle cx="112" cy="66" r="32" fill="rgba(110,127,240,.32)"/>
+              <circle cx="70" cy="108" r="32" fill="rgba(110,127,240,.28)"/>
+              <circle cx="112" cy="108" r="32" fill="rgba(110,127,240,.5)"/>
+            </svg>
+          </div>
+        </article>
+
+        <article class="card medium cyan-card white-text">
+          <div class="card-inner">
+            <h2>按部门查</h2>
+            <p>按部门查询办事事项</p>
+            <span class="arrow">›</span>
+            <svg class="illus" viewBox="0 0 180 160" aria-hidden="true">
+              <path d="M42 126V56l48-26 48 26v70" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.8)" stroke-width="7"/>
+              <path d="M68 70h18M68 94h18M104 70h18M104 94h18" stroke="rgba(255,255,255,.8)" stroke-width="7" stroke-linecap="round"/>
+              <path d="M34 126h116" stroke="rgba(255,255,255,.8)" stroke-width="7" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </article>
+
+        <article class="card small pale-blue">
+          <div class="card-inner">
+            <h3>窗口导航</h3>
+            <p>楼层区域　窗口指引</p>
+            <span class="arrow">›</span>
+          </div>
+        </article>
+
+        <article class="card small pale-blue">
+          <div class="card-inner">
+            <h3>常见问题</h3>
+            <p>常见问题解答</p>
+            <span class="arrow">›</span>
+          </div>
+        </article>
+
+        <article class="card small gold-card">
+          <div class="card-inner">
+            <h3>通知公告</h3>
+            <p>最新公告　及时知晓</p>
+            <span class="arrow">›</span>
+          </div>
+        </article>
+
+        <article class="card honor">
+          <div class="card-inner">
+            <h3>模范先锋岗</h3>
+            <p>先进典型展示　服务榜样力量</p>
+            <span class="arrow">›</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <nav class="nav">
+      <div class="nav-item active"><span class="nav-icon">⌂</span>首页</div>
+      <div class="nav-item"><span class="nav-icon">‹</span>返回</div>
+      <div class="nav-item"><span class="nav-icon">↻</span>重来</div>
+      <div class="nav-item"><span class="nav-icon">?</span>帮助</div>
+    </nav>
+  </main>
+</body>
+</html>

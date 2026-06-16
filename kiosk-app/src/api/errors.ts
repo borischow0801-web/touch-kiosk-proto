@@ -22,3 +22,7 @@ export class ApiError extends Error {
 export function isApiError(value: unknown): value is ApiError {
   return value instanceof ApiError
 }
+
+export function isServiceUnavailable(error: unknown): boolean {
+  return isApiError(error) && (error.httpStatus === 503 || error.code === 503)
+}

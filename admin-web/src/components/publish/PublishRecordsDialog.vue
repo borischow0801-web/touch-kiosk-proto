@@ -35,6 +35,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { ApiError } from '@/api/http'
 import { fetchContentPublishRecordsApi } from '@/api/publish/content'
+import { fetchHomeConfigPublishRecordsApi } from '@/api/publish/homeConfig'
 import type { PublishRecordItem } from '@/api/publish/types'
 import { PUBLISH_RECORD_ACTION_LABELS, publishStatusLabel } from '@/constants/publish'
 import { formatDateTime } from '@/utils/contentForm'
@@ -44,6 +45,7 @@ defineOptions({ name: 'PublishRecordsDialog' })
 const props = defineProps<{
   modelValue: boolean
   bizId: string
+  bizType?: 'content' | 'home_config'
 }>()
 
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
@@ -57,6 +59,7 @@ watch(
   () => props.modelValue,
   (v) => {
     visible.value = v
+    if (v && props.bizId) void loadRecords()
   },
 )
 
@@ -71,7 +74,9 @@ async function loadRecords(): Promise<void> {
   errorMsg.value = ''
   records.value = []
   try {
-    records.value = await fetchContentPublishRecordsApi(props.bizId)
+    records.value = props.bizType === 'home_config'
+      ? await fetchHomeConfigPublishRecordsApi(props.bizId)
+      : await fetchContentPublishRecordsApi(props.bizId)
   } catch (e) {
     errorMsg.value = e instanceof ApiError ? e.message : '加载发布记录失败'
   } finally {

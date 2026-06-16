@@ -13,6 +13,9 @@ import { GuideDeptMapping } from './entities/guide-dept-mapping.entity';
 import { GuideThemeMapping } from './entities/guide-theme-mapping.entity';
 import { GuideItemConfig } from './entities/guide-item-config.entity';
 import { GuideApiCache } from './entities/guide-api-cache.entity';
+import { HomeConfig } from './entities/home-config.entity';
+import { HomeConfigVersion } from './entities/home-config-version.entity';
+import { HomeModule } from './entities/home-module.entity';
 import { CreateRbacTables1749686400000 } from './migrations/1749686400000-CreateRbacTables';
 import { SeedRbacData1749772800000 } from './migrations/1749772800000-SeedRbacData';
 import { CreateContentTables1749859200000 } from './migrations/1749859200000-CreateContentTables';
@@ -27,6 +30,9 @@ import { CreateGuideItemConfigTable1749910800000 } from './migrations/1749910800
 import { SeedGuideItemPermissions1749914400000 } from './migrations/1749914400000-SeedGuideItemPermissions';
 import { SeedGuideItemRolePermissions1749918000000 } from './migrations/1749918000000-SeedGuideItemRolePermissions';
 import { CreateGuideApiCacheTable1749921600000 } from './migrations/1749921600000-CreateGuideApiCacheTable';
+import { CreateHomeConfigTables1749925200000 } from './migrations/1749925200000-CreateHomeConfigTables';
+import { SeedHomeConfigPermissions1749928800000 } from './migrations/1749928800000-SeedHomeConfigPermissions';
+import { SeedHomeConfigRolePermissions1749932400000 } from './migrations/1749932400000-SeedHomeConfigRolePermissions';
 
 export const DB_ENTITIES = [
   SysUser,
@@ -43,6 +49,9 @@ export const DB_ENTITIES = [
   GuideThemeMapping,
   GuideItemConfig,
   GuideApiCache,
+  HomeConfig,
+  HomeConfigVersion,
+  HomeModule,
 ];
 export const DB_MIGRATIONS = [
   CreateRbacTables1749686400000,
@@ -59,6 +68,9 @@ export const DB_MIGRATIONS = [
   SeedGuideItemPermissions1749914400000,
   SeedGuideItemRolePermissions1749918000000,
   CreateGuideApiCacheTable1749921600000,
+  CreateHomeConfigTables1749925200000,
+  SeedHomeConfigPermissions1749928800000,
+  SeedHomeConfigRolePermissions1749932400000,
 ];
 
 /**

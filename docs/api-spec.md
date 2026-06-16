@@ -304,11 +304,12 @@ bizType 示例：
 
 说明：
 
-- 一期仅维护 **一条逻辑首页配置**（`config_name=default`，主键为 UUID）。
+- 一期仅维护 **一条逻辑首页配置**（`config_name=default`，主键为 UUID；单例由应用层事务保证，不使用数据库部分唯一索引）。
 - 首页布局与展示字段存于 `home_config_version`；模块存于 `home_module`（归属版本，非主表）。
 - 高频事项由 `GuideConfigModule` / `guide_item_config` 的 `is_hot`、`is_recommend` 维护，**不**写入首页版本快照。
 - 审核发布走统一接口第八章，`bizType = home_config`。
-- 管理端模块 CRUD 仅操作 **当前可编辑草稿版本**。
+- 基础配置编辑 **唯一入口** 为 `PUT /api/admin/home/config`；管理端模块 CRUD 仅操作当前 **`draft`** 版本。
+- 存在 `pending` 版本时，禁止创建或编辑 `draft`（返回 409）。
 
 ### 权限
 
@@ -335,7 +336,7 @@ bizType 示例：
 
 权限：`home:config:read`
 
-说明：返回逻辑单例主表信息及 **当前可编辑草稿版本**（若不存在 draft 则返回元数据与 published 指针，不含 unpublished 正文的直接编辑能力）。
+说明：返回逻辑单例主表信息及当前 **`draft`** 版本（若不存在 `draft` 则 `draftVersion` 为 null，仅返回主表元数据与已发布版本摘要）。
 
 响应 `data` 字段：
 
@@ -360,13 +361,20 @@ bizType 示例：
   - changeRemark
 - updatedAt
 
-不返回：createdBy 内部审计字段以外的后台凭据。
+**不得** 返回：`createdBy`、`updatedBy` 等审计字段；凭据、权限信息；内部数据库列名或未映射的后台字段。
 
 #### PUT /api/admin/home/config
 
 权限：`home:config:update`
 
-说明：更新 **当前草稿版本** 的基础信息与 JSON 配置。若尚无 draft，应先创建草稿版本（见下方「创建草稿」语义，可由本接口隐式触发或独立服务动作）。
+说明：**唯一** 基础配置编辑入口。按下列规则隐式创建或更新 `draft`：
+
+| 条件 | 行为 |
+|---|---|
+| 已存在 `draft` | 更新该 `draft` 正文 |
+| 不存在 `draft` 且存在 `currentVersionId` | 事务内复制当前已发布版本 **及其模块** 生成新 `draft`，再应用本次更新；主表 **保持 `published`** |
+| 首次使用（主表不存在） | 事务内创建 UUID 主表（`status=draft`）与 `version_no=1` 的 `draft`，再应用更新 |
+| 已存在 `pending` 版本 | 返回 **409**，禁止创建或编辑 `draft` |
 
 请求体：
 
@@ -378,26 +386,18 @@ bizType 示例：
 
 约束：
 
-- 不得修改 `published` 版本行；不得修改 `current_version_id`。
+- 不得修改非 `draft` 版本正文；不得修改 `current_version_id`。
 - 不得通过本接口写入高频事项。
 
-#### POST /api/admin/home/config/draft（可选显式接口）
+### 管理端 — 模块（归属当前 draft 版本）
 
-权限：`home:config:update`
-
-说明：基于当前已发布版本（或指定 `sourceVersionId`）复制 **版本记录及模块行** 为新 `draft`。若已存在未提交的 draft，返回 409。
-
-请求体（可选）：
-
-- sourceVersionId（string，可空；默认从 `currentVersionId` 复制）
-
-### 管理端 — 模块（归属当前草稿版本）
+> **路由顺序**：实现时 `PUT /api/admin/home/modules/sort` 必须 **优先于** `PUT /api/admin/home/modules/:id` 注册或匹配，避免 `sort` 被识别为 `:id`。
 
 #### GET /api/admin/home/modules
 
 权限：`home:module:read`
 
-说明：返回 **当前可编辑草稿版本** 下未逻辑删除的模块列表，按 `sortOrder` 升序。
+说明：返回当前 **`draft`** 版本下未逻辑删除的模块列表，按 `sortOrder` 升序。无 `draft` 或存在 `pending` 且无 `draft` 时返回空列表或 409（与实现约定一致，写操作一律 409）。
 
 响应 `data.list[]` 字段：
 
@@ -413,9 +413,13 @@ bizType 示例：
 - targetType
 - targetValue
 
+**不得** 返回审计字段、凭据或内部数据库字段。
+
 #### POST /api/admin/home/modules
 
 权限：`home:module:create`
+
+说明：在当前 `draft` 版本下新增模块。存在 `pending` 且无 `draft` 时返回 **409**。
 
 请求体：
 
@@ -430,23 +434,11 @@ bizType 示例：
 - targetType（string，必填，如 route / content / external）
 - targetValue（string，必填）
 
-#### PUT /api/admin/home/modules/:id
-
-权限：`home:module:update`
-
-请求体：同 POST，字段均可选（部分更新）。
-
-#### DELETE /api/admin/home/modules/:id
-
-权限：`home:module:delete`
-
-说明：逻辑删除（写 `deleted_at`），仅允许操作当前草稿版本下的模块。
-
 #### PUT /api/admin/home/modules/sort
 
 权限：`home:module:sort`
 
-说明：批量更新当前草稿版本内模块排序。
+说明：批量更新当前 `draft` 版本内模块排序。存在 `pending` 且无 `draft` 时返回 **409**。
 
 请求体：
 
@@ -461,8 +453,22 @@ bizType 示例：
 
 约束：
 
-- `items` 不得为空；`id` 必须属于当前草稿版本；`sortOrder` 从 1 起连续或允许间断由实现约定，但须唯一。
+- `items` 不得为空；`id` 必须属于当前 `draft` 版本；`sortOrder` 从 1 起连续或允许间断由实现约定，但须唯一。
 - 不得包含已逻辑删除模块。
+
+#### PUT /api/admin/home/modules/:id
+
+权限：`home:module:update`
+
+说明：更新当前 `draft` 版本下的模块。存在 `pending` 且无 `draft` 时返回 **409**。
+
+请求体：同 POST，字段均可选（部分更新）。
+
+#### DELETE /api/admin/home/modules/:id
+
+权限：`home:module:delete`
+
+说明：逻辑删除（写 `deleted_at`），仅允许操作当前 `draft` 版本下的模块。存在 `pending` 且无 `draft` 时返回 **409**。
 
 ### 管理端 — 审核发布
 
@@ -480,11 +486,28 @@ bizType 示例：
 
 发布状态（varchar）：`draft`、`pending`、`published`、`rejected`、`withdrawn`、`archived`。
 
-发布语义：
+### 版本可编辑性
+
+- 仅 `draft` 允许编辑版本正文与关联模块。
+- `pending`、`published`、`rejected`、`withdrawn`、`archived` 正文与模块不可修改；仅允许通过发布流程更新 `status`。
+- 历史版本不得删除或覆盖；同一配置最多同时存在一个 `draft` 与一个 `pending`。
+
+### 主表与版本状态机
+
+| 操作 | home_config | home_config_version | current_version_id |
+|---|---|---|---|
+| `PUT` 保存草稿 | 见 §十 `PUT` 规则 | 更新/新建 `draft` | 不变 |
+| 提交审核 | 无已发布：`draft`/`rejected`→`pending`；有 `currentVersionId`：**保持 `published`** | `draft`→`pending` | 不变 |
+| 审核通过 / 直接发布 | → `published` | 目标版本→`published` | 更新为新版本 |
+| 驳回 | 无已发布：→`rejected`；有 `currentVersionId`：**保持 `published`** | `pending`→`rejected` | 不变 |
+| 撤回 | → `withdrawn` | 当前生效版本→`withdrawn` | **清空** |
+| `withdrawn` 下创建/提交/驳回 | **保持 `withdrawn`** | 新建/流转版本状态 | 不变，直至再发布 |
+| 回滚 | **不变** | 复制历史版本及模块为新 `draft` | **不变** |
+
+补充语义：
 
 - 新版本发布：更新 `current_version_id`；历史 `published` 版本 **保留**，不自动改为 `withdrawn`。
-- 撤回：当前生效版本与主表均为 `withdrawn`，`current_version_id` 清空。
-- 回滚：复制历史版本 **及其模块** 为新 `draft`，须再次发布方生效。
+- 回滚产物为 `draft`，须再次审核或直接发布方生效。
 
 ### 群众端
 
@@ -497,7 +520,7 @@ bizType 示例：
 3. `guide_item_config` 中 `is_visible=1` 且（`is_hot=1` 或 `is_recommend=1`）的高频事项
 4. 已发布 `content_item`（`content_type=notices`，`status=published`）的摘要列表（条数上限由实现约定，如 5 条）
 
-**不得** 返回：`draft`、`pending`、`rejected`、`withdrawn`、`archived` 版本或模块；不得返回后台审计字段、共享平台参数。
+**不得** 返回：`draft`、`pending`、`rejected`、`withdrawn`、`archived` 版本或模块；`createdBy`、`updatedBy` 等审计字段；凭据、权限信息、共享平台参数或内部数据库字段。
 
 成功响应 `data` 字段：
 
@@ -531,12 +554,12 @@ bizType 示例：
 
 当不存在满足条件的已发布首页配置时：
 
-- HTTP 状态码：200（信封层）
-- 业务 `code`：**503**
+- HTTP 状态码：**503**
+- 响应信封 `code`：**503**
 - `message`：服务暂不可用类友好文案
 - `data`：`null`
 
-**禁止** 返回示例政务事项或开发 mock 数据。群众端应使用 **本地离线配置** 兜底展示。
+**禁止** 返回示例政务事项或开发 mock 数据。群众端捕获 **HTTP 503** 或信封 `code=503` 后，应使用 **本地离线配置** 兜底展示。
 
 ---
 

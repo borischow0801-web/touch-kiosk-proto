@@ -1,44 +1,37 @@
 <template>
-  <div class="h-full flex flex-col">
-    <header class="shrink-0 px-6 py-5 bg-white shadow-sm" style="height: 29vh;">
-      <div class="flex items-start justify-between h-full">
-        <div>
-          <div class="text-5xl font-bold text-slate-900">{{ config?.title ?? '触摸查询原型' }}</div>
-          <div class="text-3xl text-slate-500 mt-3">{{ config?.subtitle ?? '请在下方操作区点击选择' }}</div>
-          <div class="mt-4 space-y-2">
-            <div v-for="(line, idx) in (config?.bannerLines ?? [])" :key="idx" class="text-3xl text-slate-700">
-              {{ line }}
-            </div>
-          </div>
-        </div>
-        <div class="text-3xl text-slate-500">{{ nowText }}</div>
-      </div>
-    </header>
+  <div class="kiosk-app flex flex-col h-full">
+    <KioskHomeHeader
+      :title="config.title"
+      :subtitle="config.subtitle"
+      :banner-lines="config.bannerLines"
+      :clock="nowText"
+    />
 
-    <main class="flex-1 overflow-y-auto px-6 py-6" style="height: 68vh;">
+    <div v-if="isOffline" class="offline-notice-bar">
+      当前为离线首页配置，部分功能可能不可用
+    </div>
+
+    <main class="kiosk-main">
       <router-view />
     </main>
 
-    <KioskBottomNav :items="config?.nav ?? defaultNav" />
+    <KioskBottomNav :items="config.nav" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import KioskBottomNav from './components/KioskBottomNav.vue'
-import { getConfig } from './api/endpoints'
-import type { AppConfig, NavItem } from './api/types'
+import KioskHomeHeader from './components/home/KioskHomeHeader.vue'
 import { useIdleHome } from './app/useIdleHome'
 import { resetKioskSession } from './app/useBottomNav'
+import { useHomeConfigStore } from './stores/homeConfig'
+import { applyThemeTokens } from './utils/applyTheme'
 
-const config = ref<AppConfig | null>(null)
-const defaultNav: NavItem[] = [
-  { label: '首页', to: '/home' },
-  { label: '返回', to: 'BACK' },
-  { label: '重来', to: '/home?reset=1' },
-  { label: '帮助', to: '/help' },
-]
+const homeConfig = useHomeConfigStore()
+const config = computed(() => homeConfig.effectiveConfig)
+const isOffline = computed(() => homeConfig.source === 'offline')
 
 const nowText = ref('')
 let clockTimer: ReturnType<typeof window.setInterval> | undefined
@@ -47,7 +40,14 @@ let cleanupIdle: (() => void) | undefined
 const route = useRoute()
 const router = useRouter()
 
-// Explicit session reset: clear guide store when navigating to home with reset=1
+watch(
+  () => config.value.theme,
+  (theme) => {
+    applyThemeTokens(theme)
+  },
+  { immediate: true, deep: true },
+)
+
 watch(
   () => route.fullPath,
   () => {
@@ -68,14 +68,10 @@ function tick() {
 onMounted(async () => {
   tick()
   clockTimer = window.setInterval(tick, 30_000)
-  try {
-    config.value = await getConfig()
-  } catch {
-    config.value = null
-  }
+  await homeConfig.ensureLoaded()
   cleanupIdle = useIdleHome(
     router,
-    () => config.value?.idleSeconds ?? 90,
+    () => config.value.idleSeconds,
     resetKioskSession,
   )
 })

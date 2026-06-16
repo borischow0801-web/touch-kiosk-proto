@@ -10,6 +10,7 @@ import { AuthService } from '../src/auth/auth.service';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../src/auth/guards/permissions.guard';
 import { ContentPublishService } from '../src/publish/content-publish.service';
+import { HomeConfigPublishService } from '../src/home-config/home-config-publish.service';
 import { PublishService } from '../src/publish/publish.service';
 import { PublishController } from '../src/admin-api/controllers/publish.controller';
 import { ContentItem } from '../src/database/entities/content-item.entity';
@@ -31,6 +32,7 @@ const VERSION_ID = 'version-001';
 const VERSION_ID_2 = 'version-002';
 const VERSION_ID_OLD = 'version-old-001';
 const PUBLISHED_VERSION_ID = 'version-pub-001';
+const CONFIG_ID = 'home-config-001';
 
 function makeItem(overrides: Partial<ContentItem> = {}): ContentItem {
   return {
@@ -474,6 +476,15 @@ describe('PublishService — unit', () => {
     rollback: jest.fn(),
     listRecords: jest.fn(),
   };
+  const mockHomeConfigPublish = {
+    submit: jest.fn(),
+    approve: jest.fn(),
+    reject: jest.fn(),
+    directPublish: jest.fn(),
+    withdraw: jest.fn(),
+    rollback: jest.fn(),
+    listRecords: jest.fn(),
+  };
 
   beforeEach(async () => {
     jest.resetAllMocks();
@@ -481,16 +492,55 @@ describe('PublishService — unit', () => {
       providers: [
         PublishService,
         { provide: ContentPublishService, useValue: mockContentPublish },
+        { provide: HomeConfigPublishService, useValue: mockHomeConfigPublish },
       ],
     }).compile();
     service = module.get(PublishService);
   });
 
   it('不支持的 bizType 返回 400', async () => {
-    await expect(service.submit('home_config', ITEM_ID, SA_USER_ID)).rejects.toBeInstanceOf(
+    await expect(service.submit('guide_config', ITEM_ID, SA_USER_ID)).rejects.toBeInstanceOf(
       BadRequestException,
     );
     expect(mockContentPublish.submit).not.toHaveBeenCalled();
+    expect(mockHomeConfigPublish.submit).not.toHaveBeenCalled();
+  });
+
+  it('home_config submit 路由到 HomeConfigPublishService', async () => {
+    mockHomeConfigPublish.submit.mockResolvedValueOnce({
+      bizId: CONFIG_ID,
+      bizType: 'home_config',
+      itemStatus: 'pending',
+      versionStatus: 'pending',
+      versionId: VERSION_ID,
+      versionNo: 1,
+      currentVersionId: null,
+      publishAt: null,
+    });
+
+    const result = await service.submit('home_config', CONFIG_ID, SA_USER_ID);
+
+    expect(mockHomeConfigPublish.submit).toHaveBeenCalledWith(CONFIG_ID, SA_USER_ID, undefined, undefined);
+    expect(mockContentPublish.submit).not.toHaveBeenCalled();
+    expect(result.bizType).toBe('home_config');
+  });
+
+  it('content submit 仍路由到 ContentPublishService', async () => {
+    mockContentPublish.submit.mockResolvedValueOnce({
+      bizId: ITEM_ID,
+      bizType: 'content',
+      itemStatus: 'pending',
+      versionStatus: 'pending',
+      versionId: VERSION_ID,
+      versionNo: 1,
+      currentVersionId: null,
+      publishAt: null,
+    });
+
+    await service.submit('content', ITEM_ID, SA_USER_ID);
+
+    expect(mockContentPublish.submit).toHaveBeenCalledWith(ITEM_ID, SA_USER_ID, undefined, undefined);
+    expect(mockHomeConfigPublish.submit).not.toHaveBeenCalled();
   });
 });
 
@@ -614,5 +664,40 @@ describe('PublishController — HTTP', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.code).toBe(0);
+  });
+
+  it('home_config submit 可路由到 PublishService', async () => {
+    mockUserRepo.findOne.mockResolvedValueOnce(makeSaUser());
+    mockUserRoleRepo.find.mockResolvedValueOnce([
+      { userId: SA_USER_ID, roleId: 'role-sa' } as SysUserRole,
+    ]);
+    mockRoleRepo.find.mockResolvedValueOnce([
+      { id: 'role-sa', roleCode: 'SUPER_ADMIN', status: 'active' } as SysRole,
+    ]);
+    mockPublishService.submit.mockResolvedValueOnce({
+      bizId: CONFIG_ID,
+      bizType: 'home_config',
+      itemStatus: 'pending',
+      versionStatus: 'pending',
+      versionId: VERSION_ID,
+      versionNo: 1,
+      currentVersionId: null,
+      publishAt: null,
+    });
+
+    const res = await supertest(app.getHttpServer())
+      .post(`/api/admin/publish/home_config/${CONFIG_ID}/submit`)
+      .set('Authorization', `Bearer ${makeSaToken()}`)
+      .send({});
+
+    expect(res.status).toBe(200);
+    expect(res.body.code).toBe(0);
+    expect(mockPublishService.submit).toHaveBeenCalledWith(
+      'home_config',
+      CONFIG_ID,
+      SA_USER_ID,
+      undefined,
+      undefined,
+    );
   });
 });

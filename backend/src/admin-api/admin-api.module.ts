@@ -4,6 +4,7 @@ import { SystemModule } from '../system/system.module';
 import { ContentModule } from '../content/content.module';
 import { PublishModule } from '../publish/publish.module';
 import { GuideConfigModule } from '../guide-config/guide-config.module';
+import { HomeConfigModule } from '../home-config/home-config.module';
 import { AuthController } from './controllers/auth.controller';
 import { UsersController } from './controllers/users.controller';
 import { RolesController } from './controllers/roles.controller';
@@ -14,9 +15,11 @@ import { PublishController } from './controllers/publish.controller';
 import { GuideDeptsController } from './controllers/guide-depts.controller';
 import { GuideThemesController } from './controllers/guide-themes.controller';
 import { GuideItemConfigsController } from './controllers/guide-item-configs.controller';
+import { HomeConfigController } from './controllers/home-config.controller';
+import { HomeModulesController } from './controllers/home-modules.controller';
 
 @Module({
-  imports: [AuthModule, SystemModule, ContentModule, PublishModule, GuideConfigModule],
+  imports: [AuthModule, SystemModule, ContentModule, PublishModule, GuideConfigModule, HomeConfigModule],
   controllers: [
     AuthController,
     UsersController,
@@ -28,6 +31,8 @@ import { GuideItemConfigsController } from './controllers/guide-item-configs.con
     GuideDeptsController,
     GuideThemesController,
     GuideItemConfigsController,
+    HomeConfigController,
+    HomeModulesController,
   ],
 })
 export class AdminApiModule {}

@@ -5,6 +5,12 @@ import { describe, expect, it } from 'vitest'
 const endpointsSrc = readFileSync(resolve(__dirname, '../src/api/endpoints.ts'), 'utf8')
 
 describe('API endpoints security', () => {
+  it('首页配置接口仅调用 /api/public/home/config', () => {
+    expect(endpointsSrc).toContain('/api/public/home/config')
+    expect(endpointsSrc).toContain('getConfig')
+    expect(endpointsSrc).not.toMatch(/\/api\/admin\//)
+  })
+
   it('办事指南接口仅调用 /api/public/service-guide', () => {
     expect(endpointsSrc).toContain('/api/public/service-guide/depts')
     expect(endpointsSrc).toContain('/api/public/service-guide/themes')
